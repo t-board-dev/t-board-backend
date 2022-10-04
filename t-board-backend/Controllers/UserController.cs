@@ -2,8 +2,13 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using System;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using t_board.Entity;
 using t_board.Entity.Entity;
@@ -11,18 +16,24 @@ using t_board_backend.Models.User;
 
 namespace t_board_backend.Controllers
 {
+    [Authorize]
     public class UserController : Controller
     {
+        private readonly IConfiguration _configuration;
+
         private readonly UserManager<TBoardUser> _userManager;
         private readonly SignInManager<TBoardUser> _signInManager;
 
         private readonly TBoardDbContext _dbContext;
 
         public UserController(
+            IConfiguration configuration,
             UserManager<TBoardUser> userManager,
             SignInManager<TBoardUser> signInManager,
             TBoardDbContext dbContext)
         {
+            _configuration = configuration;
+
             _userManager = userManager;
             _signInManager = signInManager;
 
@@ -40,7 +51,29 @@ namespace t_board_backend.Controllers
             var checkPassword = await _signInManager.CheckPasswordSignInAsync(user, password, false);
 
             var result = await _signInManager.PasswordSignInAsync(user.UserName, password, false, false);
-            if (result.Succeeded) return new JsonResult(true);
+            if (result.Succeeded)
+            {
+                var claims = new[] {
+                        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                        new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
+                        new Claim("UserName", user.UserName.ToString()),
+                        new Claim("Email", user.Email),
+                        new Claim("FirstName", user.FirstName),
+                        new Claim("LastName", user.LastName),
+                    };
+
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+                var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+                var token = new JwtSecurityToken(
+                    _configuration["Jwt:Issuer"],
+                    _configuration["Jwt:Audience"],
+                    claims,
+                    expires: DateTime.UtcNow.AddMinutes(60),
+                    signingCredentials: signIn);
+
+                return new JsonResult(new JwtSecurityTokenHandler().WriteToken(token));
+            }
+
             if (result.IsLockedOut) return new JsonResult("User account has locked!");
 
             return new JsonResult("Invalid login attempt!");
