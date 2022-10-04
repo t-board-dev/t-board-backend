@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using t_board_backend.Areas.Identity.Data;
 
-namespace t_board_backend.Identity;
+namespace t_board.Entity;
 
 public class TBoardDbContext : IdentityDbContext<TBoardUser>
 {

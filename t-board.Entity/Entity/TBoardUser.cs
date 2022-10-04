@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace t_board_backend.Areas.Identity.Data;
+namespace t_board.Entity;
 
 public class TBoardUser : IdentityUser
 {
