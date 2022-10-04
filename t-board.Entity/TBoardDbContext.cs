@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using t_board.Entity.Entity;
 
 namespace t_board.Entity;
 
@@ -10,6 +11,8 @@ public class TBoardDbContext : IdentityDbContext<TBoardUser>
         : base(options)
     {
     }
+
+    public DbSet<UserInvitation> UserInvitations { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
