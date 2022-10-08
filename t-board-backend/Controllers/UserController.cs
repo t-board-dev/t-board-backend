@@ -17,6 +17,7 @@ using t_board_backend.Models.User;
 namespace t_board_backend.Controllers
 {
     [Authorize]
+    [Route("user/")]
     public class UserController : Controller
     {
         private readonly IConfiguration _configuration;
@@ -41,8 +42,8 @@ namespace t_board_backend.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("Login")]
-        public async Task<IActionResult> Login(string email, string password)
+        [HttpPost("signIn")]
+        public async Task<IActionResult> SignIn(string email, string password)
         {
             var user = await _userManager.FindByEmailAsync(email);
             if (user is null) return new JsonResult("User could not found!");
@@ -79,10 +80,8 @@ namespace t_board_backend.Controllers
             return new JsonResult("Invalid login attempt!");
         }
 
-        // TODO
-        // Admin control
-        // Only admin can create user
-        [HttpPost("CreateUser")]
+        [Authorize(Roles = "Admin")]
+        [HttpPost("createUser")]
         public async Task<IActionResult> CreateUser(UserDto user)
         {
             var created = await _userManager.CreateAsync(new TBoardUser
@@ -102,10 +101,8 @@ namespace t_board_backend.Controllers
             return new JsonResult(created.Succeeded);
         }
 
-        // TODO
-        // Admin control
-        // Only admin can send invitation
-        [HttpPost("SendInvitation")]
+        [Authorize(Roles = "Admin")]
+        [HttpPost("sendInvitation")]
         public async Task<IActionResult> SendInvitation(string userEmail)
         {
             var invitationSent = await SendInvitationCore(userEmail);
@@ -148,8 +145,8 @@ namespace t_board_backend.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("Invitation")]
-        public async Task<IActionResult> Invitation([FromQuery(Name = "inviteCode")] string inviteCode)
+        [HttpPost("checkInvitation")]
+        public async Task<IActionResult> CheckInvitation(string inviteCode)
         {
             var invitation = await _dbContext.UserInvitations
                 .Where(i => i.InviteCode == inviteCode)
@@ -162,9 +159,8 @@ namespace t_board_backend.Controllers
             return new JsonResult(true);
         }
 
-        [AllowAnonymous]
-        [HttpPost("ConfirmUser")]
-        public async Task<IActionResult> ConfirmUser([FromQuery(Name = "inviteCode")] string inviteCode, string password)
+        [HttpPost("confirmUser")]
+        public async Task<IActionResult> ConfirmUser(string inviteCode, string password)
         {
             var invitation = await _dbContext.UserInvitations
                 .Where(i => i.InviteCode == inviteCode)
@@ -199,8 +195,8 @@ namespace t_board_backend.Controllers
             return new JsonResult(true);
         }
 
-        [HttpPost("Logout")]
-        public async Task<IActionResult> Logout()
+        [HttpPost("signOut")]
+        public async Task<IActionResult> SignOut()
         {
             await _signInManager.SignOutAsync();
             return new JsonResult(true);
