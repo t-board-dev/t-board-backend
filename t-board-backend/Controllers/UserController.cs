@@ -48,7 +48,7 @@ namespace t_board_backend.Controllers
         public async Task<IActionResult> SignIn(string email, string password)
         {
             var user = await _userManager.FindByEmailAsync(email);
-            if (user is null) return new JsonResult("User could not found!");
+            if (user is null) return NotFound(email);
 
             var canSignIn = await _signInManager.CanSignInAsync(user);
             var checkPassword = await _signInManager.CheckPasswordSignInAsync(user, password, false);
@@ -76,12 +76,12 @@ namespace t_board_backend.Controllers
                     expires: DateTime.UtcNow.AddMinutes(60),
                     signingCredentials: signIn);
 
-                return new JsonResult(new JwtSecurityTokenHandler().WriteToken(token));
+                return Ok(new JwtSecurityTokenHandler().WriteToken(token));
             }
 
-            if (result.IsLockedOut) return new JsonResult("User account has locked!");
+            if (result.IsLockedOut) return Forbid("Account is locked!");
 
-            return new JsonResult("Invalid login attempt!");
+            return BadRequest("Check credentials!");
         }
 
         [Authorize(Roles = "Admin")]
@@ -97,12 +97,12 @@ namespace t_board_backend.Controllers
                 PhoneNumber = user.PhoneNumber
             });
 
-            if (created.Succeeded is false) return new JsonResult(created.Errors.Select(e => new string($"[{e.Code} - {e.Description}]")));
+            if (created.Succeeded is false) return UnprocessableEntity(created.Errors);
 
             var invitationSent = await SendInvitationCore(user.Email);
-            if (invitationSent.Succeeded is false) return new JsonResult(invitationSent.Message);
+            if (invitationSent.Succeeded is false) return UnprocessableEntity(invitationSent.Message);
 
-            return new JsonResult(created.Succeeded);
+            return Ok();
         }
 
         [Authorize(Roles = "Admin")]
@@ -111,9 +111,9 @@ namespace t_board_backend.Controllers
         {
             var invitationSent = await SendInvitationCore(userEmail);
 
-            if (invitationSent.Succeeded is false) return new JsonResult(invitationSent.Message);
+            if (invitationSent.Succeeded is false) return UnprocessableEntity(invitationSent.Message);
 
-            return new JsonResult(invitationSent.Succeeded);
+            return Ok();
         }
 
         private async Task<(bool Succeeded, string Message)> SendInvitationCore(string userEmail)
@@ -156,54 +156,63 @@ namespace t_board_backend.Controllers
                 .Where(i => i.InviteCode == inviteCode)
                 .FirstOrDefaultAsync();
 
-            if (invitation == null) return new JsonResult("Invitation has not found!");
-            if (invitation.IsConfirmed) return new JsonResult("Invitation has already confirmed!");
-            if (invitation.ExpireDate < DateTime.Now) return new JsonResult("Invitation has expired!");
+            if (invitation == null) return NotFound(inviteCode);
+            if (invitation.IsConfirmed) return Conflict("Already confirmed!");
+            if (invitation.ExpireDate < DateTime.Now) Conflict("Invitation has expired!");
 
-            return new JsonResult(true);
+            return Ok();
         }
 
-        [HttpPost("confirmUser")]
-        public async Task<IActionResult> ConfirmUser(string inviteCode, string password)
+        [AllowAnonymous]
+        [HttpPost("setPassword")]
+        public async Task<IActionResult> SetPassword(string inviteCode, string password)
         {
             var invitation = await _dbContext.UserInvitations
                 .Where(i => i.InviteCode == inviteCode)
                 .FirstOrDefaultAsync();
 
-            if (invitation == null) return new JsonResult("Invitation has not found!");
-            if (invitation.IsConfirmed) return new JsonResult("Invitation has already confirmed!");
-            if (invitation.ExpireDate < DateTime.Now) return new JsonResult("Invitation has expired!");
+            if (invitation == null) return NotFound(inviteCode);
+            if (invitation.IsConfirmed) return Conflict("Invitation has already confirmed!");
+            if (invitation.ExpireDate < DateTime.Now) return Conflict("Invitation has expired!");
 
             var user = await _userManager.FindByEmailAsync(invitation.UserEmail);
-            if (user == null) return new JsonResult("User not found!");
-            if (user.EmailConfirmed) return new JsonResult("User has already confirmed!");
+            if (user == null) return NotFound("User not found!");
 
             var hasPassword = await _userManager.HasPasswordAsync(user);
-            if (hasPassword) return new JsonResult("User has already password!");
+            if (hasPassword) return Conflict("User has already password!");
+
             var passwordAdded = await _userManager.AddPasswordAsync(user, password);
-            if (passwordAdded.Succeeded is false) return new JsonResult(passwordAdded.Errors.Select(e => $"[{e.Code} - {e.Description}]"));
+            if (passwordAdded.Succeeded is false) return UnprocessableEntity(passwordAdded.Errors);
 
-            var emailConfirmToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            var emailConfirmed = await _userManager.ConfirmEmailAsync(user, emailConfirmToken);
-            if (emailConfirmed.Succeeded is false) return new JsonResult(emailConfirmed.Errors.Select(e => $"[{e.Code} - {e.Description}]"));
+            var emailConfirmed = await _userManager.IsEmailConfirmedAsync(user);
+            if (emailConfirmed is false)
+            {
+                var emailConfirmToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                var confirmEmailResult = await _userManager.ConfirmEmailAsync(user, emailConfirmToken);
+                if (confirmEmailResult.Succeeded is false) return UnprocessableEntity(confirmEmailResult.Errors);
+            }
 
-            var phoneConfirmToken = await _userManager.GenerateChangePhoneNumberTokenAsync(user, user.PhoneNumber);
-            var phoneConfirmed = await _userManager.ChangePhoneNumberAsync(user, user.PhoneNumber, phoneConfirmToken);
-            if (phoneConfirmed.Succeeded is false) return new JsonResult(phoneConfirmed.Errors.Select(e => $"[{e.Code} - {e.Description}]"));
+            var phoneConfirmed = await _userManager.IsPhoneNumberConfirmedAsync(user);
+            if (phoneConfirmed is false)
+            {
+                var phoneConfirmToken = await _userManager.GenerateChangePhoneNumberTokenAsync(user, user.PhoneNumber);
+                var confirmPhoneResult = await _userManager.ChangePhoneNumberAsync(user, user.PhoneNumber, phoneConfirmToken);
+                if (confirmPhoneResult.Succeeded is false) return UnprocessableEntity(confirmPhoneResult.Errors);
+            }
 
             invitation.IsConfirmed = true;
             invitation.ConfirmDate = DateTime.Now;
 
             await _dbContext.SaveChangesAsync();
 
-            return new JsonResult(true);
+            return Ok();
         }
 
         [HttpPost("signOut")]
         public async Task<IActionResult> SignOut()
         {
             await _signInManager.SignOutAsync();
-            return new JsonResult(true);
+            return Ok();
         }
     }
 }
