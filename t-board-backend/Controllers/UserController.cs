@@ -5,10 +5,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using t_board.Entity;
 using t_board.Entity.Entity;
@@ -54,14 +56,16 @@ namespace t_board_backend.Controllers
             var result = await _signInManager.PasswordSignInAsync(user.UserName, password, false, false);
             if (result.Succeeded)
             {
+                var userRoles = await _userManager.GetRolesAsync(user);
+
                 var claims = new[] {
                         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                         new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
-                        new Claim("UserName", user.UserName.ToString()),
-                        new Claim("Email", user.Email),
-                        new Claim("FirstName", user.FirstName),
-                        new Claim("LastName", user.LastName),
-                    };
+                        new Claim("email", user.Email),
+                        new Claim("firstName", user.FirstName),
+                        new Claim("lastName", user.LastName),
+                        new Claim("roles", JsonSerializer.Serialize(userRoles))
+                };
 
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
                 var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
