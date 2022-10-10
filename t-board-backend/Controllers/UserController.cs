@@ -4,13 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using System;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using t_board.Entity;
 using t_board.Entity.Entity;
@@ -45,15 +45,17 @@ namespace t_board_backend.Controllers
 
         [AllowAnonymous]
         [HttpPost("signIn")]
-        public async Task<IActionResult> SignIn(string email, string password)
+        public async Task<IActionResult> SignIn([FromBody] SignInRequest signInRequest)
         {
-            var user = await _userManager.FindByEmailAsync(email);
-            if (user is null) return NotFound(email);
+            if (ModelState.IsValid is false) return BadRequest(signInRequest);
+
+            var user = await _userManager.FindByEmailAsync(signInRequest.Email);
+            if (user is null) return NotFound(signInRequest.Email);
 
             var canSignIn = await _signInManager.CanSignInAsync(user);
-            var checkPassword = await _signInManager.CheckPasswordSignInAsync(user, password, false);
+            var checkPassword = await _signInManager.CheckPasswordSignInAsync(user, signInRequest.Password, false);
 
-            var result = await _signInManager.PasswordSignInAsync(user.UserName, password, false, false);
+            var result = await _signInManager.PasswordSignInAsync(user.UserName, signInRequest.Password, false, false);
             if (result.Succeeded)
             {
                 var userRoles = await _userManager.GetRolesAsync(user);
@@ -64,7 +66,7 @@ namespace t_board_backend.Controllers
                         new Claim("email", user.Email),
                         new Claim("firstName", user.FirstName),
                         new Claim("lastName", user.LastName),
-                        new Claim("roles", JsonSerializer.Serialize(userRoles))
+                        new Claim("roles", JsonConvert.SerializeObject(userRoles))
                 };
 
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
@@ -86,11 +88,12 @@ namespace t_board_backend.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPost("createUser")]
-        public async Task<IActionResult> CreateUser(UserDto user)
+        public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest user)
         {
+            if (ModelState.IsValid is false) return BadRequest(user);
+
             var created = await _userManager.CreateAsync(new TBoardUser
             {
-                UserName = user.UserName,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Email = user.Email,
@@ -107,9 +110,11 @@ namespace t_board_backend.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPost("sendInvitation")]
-        public async Task<IActionResult> SendInvitation(string userEmail)
+        public async Task<IActionResult> SendInvitation([FromBody] SendInvitationRequest invitationRequest)
         {
-            var invitationSent = await SendInvitationCore(userEmail);
+            if (ModelState.IsValid is false) return BadRequest(invitationRequest);
+
+            var invitationSent = await SendInvitationCore(invitationRequest.Email);
 
             if (invitationSent.Succeeded is false) return UnprocessableEntity(invitationSent.Message);
 
@@ -150,13 +155,15 @@ namespace t_board_backend.Controllers
 
         [AllowAnonymous]
         [HttpPost("checkInvitation")]
-        public async Task<IActionResult> CheckInvitation(string inviteCode)
+        public async Task<IActionResult> CheckInvitation([FromBody] CheckInvitationRequest checkInvitationRequest)
         {
+            if (ModelState.IsValid is false) return BadRequest(checkInvitationRequest);
+
             var invitation = await _dbContext.UserInvitations
-                .Where(i => i.InviteCode == inviteCode)
+                .Where(i => i.InviteCode == checkInvitationRequest.InviteCode)
                 .FirstOrDefaultAsync();
 
-            if (invitation == null) return NotFound(inviteCode);
+            if (invitation == null) return NotFound(checkInvitationRequest.InviteCode);
             if (invitation.IsConfirmed) return Conflict("Already confirmed!");
             if (invitation.ExpireDate < DateTime.Now) Conflict("Invitation has expired!");
 
@@ -164,9 +171,13 @@ namespace t_board_backend.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("setPassword")]
-        public async Task<IActionResult> SetPassword(string inviteCode, string password)
+        [HttpPost("setPassword/{inviteCode}")]
+        public async Task<IActionResult> SetPassword(string inviteCode, [FromBody] SetPasswordRequest setPasswordRequest)
         {
+            if (ModelState.IsValid is false) return BadRequest(setPasswordRequest);
+
+            if (string.Equals(setPasswordRequest.Password, setPasswordRequest.ConfirmPassword) is false) return BadRequest("Passwords does not match!");
+
             var invitation = await _dbContext.UserInvitations
                 .Where(i => i.InviteCode == inviteCode)
                 .FirstOrDefaultAsync();
@@ -181,7 +192,7 @@ namespace t_board_backend.Controllers
             var hasPassword = await _userManager.HasPasswordAsync(user);
             if (hasPassword) return Conflict("User has already password!");
 
-            var passwordAdded = await _userManager.AddPasswordAsync(user, password);
+            var passwordAdded = await _userManager.AddPasswordAsync(user, setPasswordRequest.Password);
             if (passwordAdded.Succeeded is false) return UnprocessableEntity(passwordAdded.Errors);
 
             var emailConfirmed = await _userManager.IsEmailConfirmedAsync(user);
