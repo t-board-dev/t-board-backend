@@ -63,9 +63,11 @@ namespace t_board_backend.Controllers
                 var claims = new[] {
                         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                         new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
-                        new Claim("email", user.Email),
                         new Claim("firstName", user.FirstName),
                         new Claim("lastName", user.LastName),
+                        new Claim("email", user.Email),
+                        new Claim("title", user.Title),
+                        new Claim("phoneNumber", user.PhoneNumber),
                         new Claim("roles", JsonConvert.SerializeObject(userRoles))
                 };
 
@@ -97,6 +99,7 @@ namespace t_board_backend.Controllers
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Email = user.Email,
+                Title = user.Title,
                 PhoneNumber = user.PhoneNumber
             });
 

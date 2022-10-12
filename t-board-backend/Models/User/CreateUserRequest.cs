@@ -15,6 +15,9 @@ namespace t_board_backend.Models.User
         [JsonProperty("email")]
         public string Email { get; set; }
         [Required]
+        [JsonProperty("title")]
+        public string Title { get; set; }
+        [Required]
         [JsonProperty("phoneNumber")]
         public string PhoneNumber { get; set; }
     }
