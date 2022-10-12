@@ -14,4 +14,7 @@ public class TBoardDbContext : IdentityDbContext
 
     public DbSet<TBoardUser> BoardUsers { get; set; }
     public DbSet<UserInvitation> UserInvitations { get; set; }
+
+    public DbSet<Company> Companies { get; set; }
+    public DbSet<CompanyType> CompanyTypes { get; set; }
 }
