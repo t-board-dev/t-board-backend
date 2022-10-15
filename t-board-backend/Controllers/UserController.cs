@@ -13,7 +13,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using t_board.Entity;
-using t_board.Entity.Entity;
+using t_board.Services.Contracts;
 using t_board_backend.Models.User;
 
 namespace t_board_backend.Controllers
@@ -23,6 +23,7 @@ namespace t_board_backend.Controllers
     public class UserController : Controller
     {
         private readonly IConfiguration _configuration;
+        private readonly IInviteService _inviteService;
 
         private readonly UserManager<TBoardUser> _userManager;
         private readonly SignInManager<TBoardUser> _signInManager;
@@ -31,11 +32,13 @@ namespace t_board_backend.Controllers
 
         public UserController(
             IConfiguration configuration,
+            IInviteService inviteService,
             UserManager<TBoardUser> userManager,
             SignInManager<TBoardUser> signInManager,
             TBoardDbContext dbContext)
         {
             _configuration = configuration;
+            _inviteService = inviteService;
 
             _userManager = userManager;
             _signInManager = signInManager;
@@ -108,7 +111,7 @@ namespace t_board_backend.Controllers
 
             if (created.Succeeded is false) return UnprocessableEntity(created.Errors);
 
-            var invitationSent = await SendInvitationCore(user.Email);
+            var invitationSent = await _inviteService.SendInvitation(user.Email);
             if (invitationSent.Succeeded is false) return UnprocessableEntity(invitationSent.Message);
 
             return Ok();
@@ -120,43 +123,11 @@ namespace t_board_backend.Controllers
         {
             if (ModelState.IsValid is false) return BadRequest(invitationRequest);
 
-            var invitationSent = await SendInvitationCore(invitationRequest.Email);
+            var invitationSent = await _inviteService.SendInvitation(invitationRequest.Email);
 
             if (invitationSent.Succeeded is false) return UnprocessableEntity(invitationSent.Message);
 
             return Ok();
-        }
-
-        private async Task<(bool Succeeded, string Message)> SendInvitationCore(string userEmail)
-        {
-            var invitation = await _dbContext.UserInvitations.Where(i => i.UserEmail == userEmail).FirstOrDefaultAsync();
-
-            if (invitation == null)
-            {
-                invitation = new UserInvitation
-                {
-                    UserEmail = userEmail,
-                    InviteCode = Guid.NewGuid().ToString(),
-                    InviteDate = DateTime.Now,
-                    ExpireDate = DateTime.Today.AddDays(2),
-                };
-
-                _dbContext.Add(invitation);
-            }
-            else
-            {
-                if (invitation.IsConfirmed) return (false, "Invitation has already confirmed!");
-
-                invitation.InviteDate = DateTime.Now;
-                invitation.ExpireDate = DateTime.Today.AddDays(2);
-            }
-
-            await _dbContext.SaveChangesAsync();
-
-            // TODO:
-            // Send invitation
-
-            return (true, "Invitation sent!");
         }
 
         [AllowAnonymous]
