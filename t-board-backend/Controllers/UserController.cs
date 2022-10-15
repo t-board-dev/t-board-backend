@@ -90,18 +90,21 @@ namespace t_board_backend.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPost("createUser")]
-        public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest user)
+        public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest createUserRequest)
         {
-            if (ModelState.IsValid is false) return BadRequest(user);
+            if (ModelState.IsValid is false) return BadRequest(createUserRequest);
 
-            var created = await _userManager.CreateAsync(new TBoardUser
+            var user = new TBoardUser
             {
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email,
-                Title = user.Title,
-                PhoneNumber = user.PhoneNumber
-            });
+                FirstName = createUserRequest.FirstName,
+                LastName = createUserRequest.LastName,
+                UserName = createUserRequest.Email,
+                Email = createUserRequest.Email,
+                Title = createUserRequest.Title,
+                PhoneNumber = createUserRequest.PhoneNumber
+            };
+
+            var created = await _userManager.CreateAsync(user);
 
             if (created.Succeeded is false) return UnprocessableEntity(created.Errors);
 
