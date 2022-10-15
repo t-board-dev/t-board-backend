@@ -17,7 +17,7 @@ namespace t_board.Entity.Entity
         public int Type { get; set; }
 
         [Required]
-        [MaxLength(256)]
+        [MaxLength(512)]
         public string Url { get; set; }
     }
 }

@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using t_board.Entity.Entity;
 
@@ -17,4 +16,5 @@ public class TBoardDbContext : IdentityDbContext
 
     public DbSet<Company> Companies { get; set; }
     public DbSet<CompanyType> CompanyTypes { get; set; }
+    public DbSet<CompanyUser> CompanyUsers { get; set; }
 }
