@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace t_board.Entity.Entity
+namespace t_board.Entity
 {
     public class CompanyUser
     {
@@ -13,6 +13,6 @@ namespace t_board.Entity.Entity
         public int CompanyId { get; set; }
 
         [Required]
-        public int UserId { get; set; }
+        public string UserId { get; set; }
     }
 }

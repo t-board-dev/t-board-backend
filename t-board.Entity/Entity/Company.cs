@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace t_board.Entity.Entity
+namespace t_board.Entity
 {
     public class Company
     {
