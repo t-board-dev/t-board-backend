@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using t_board.Entity;
+using t_board.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DbContextConnection") ?? throw new InvalidOperationException("Connection string 'DbContextConnection' not found.");
@@ -109,6 +110,8 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
+
+builder.Services.AddTBoardServices();
 
 var app = builder.Build();
 

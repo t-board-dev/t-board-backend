@@ -5,7 +5,9 @@ VisualStudioVersion = 17.3.32901.215
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "t-board-backend", "t-board-backend\t-board-backend.csproj", "{12D3F0F8-B204-4338-9D94-09A94415469A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "t-board.Entity", "t-board.Entity\t-board.Entity.csproj", "{5A774484-D78E-4ABB-B691-636D17CF96A0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "t-board.Entity", "t-board.Entity\t-board.Entity.csproj", "{5A774484-D78E-4ABB-B691-636D17CF96A0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "t-board.Services", "t-board.Services\t-board.Services.csproj", "{CE569BB4-5145-47BA-9AEF-D134662CA87E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{5A774484-D78E-4ABB-B691-636D17CF96A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5A774484-D78E-4ABB-B691-636D17CF96A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5A774484-D78E-4ABB-B691-636D17CF96A0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE569BB4-5145-47BA-9AEF-D134662CA87E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE569BB4-5145-47BA-9AEF-D134662CA87E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE569BB4-5145-47BA-9AEF-D134662CA87E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE569BB4-5145-47BA-9AEF-D134662CA87E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

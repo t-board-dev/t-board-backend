@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\t-board.Entity\t-board.Entity.csproj" />
+    <ProjectReference Include="..\t-board.Services\t-board.Services.csproj" />
   </ItemGroup>
 
 </Project>
