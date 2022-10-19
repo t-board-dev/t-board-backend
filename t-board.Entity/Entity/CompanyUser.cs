@@ -13,6 +13,7 @@ namespace t_board.Entity
         public int CompanyId { get; set; }
 
         [Required]
+        [MaxLength(450)]
         public string UserId { get; set; }
     }
 }
