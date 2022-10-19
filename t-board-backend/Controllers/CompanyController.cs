@@ -126,7 +126,7 @@ namespace t_board_backend.Controllers
             await _dbContext.CompanyUsers.AddAsync(companyUser);
 
             var userAssigned = await _dbContext.SaveChangesAsync();
-            if (companyCreated is 0) return UnprocessableEntity("User could not assigned to company!");
+            if (userAssigned is 0) return UnprocessableEntity("User could not assigned to company!");
 
             var invitationSent = await _inviteService.SendInvitation(owner.Email);
             if (invitationSent.Succeeded is false) return UnprocessableEntity(invitationSent.Message);
