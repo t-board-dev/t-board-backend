@@ -11,7 +11,7 @@ using t_board_backend.Models.Role;
 namespace t_board_backend.Controllers
 {
     // TODO: 
-    
+
     // ActionFilter for exceptions
     // Handle HTTP 500
     // Logging
@@ -44,6 +44,8 @@ namespace t_board_backend.Controllers
         [HttpPost("getUserRoles")]
         public async Task<IActionResult> GetUserRoles([FromBody] GetUserRolesRequest getUserRolesRequest)
         {
+            if (ModelState.IsValid is false) return BadRequest(getUserRolesRequest);
+
             var user = await _userManager.FindByEmailAsync(getUserRolesRequest.Email);
             if (user == null) return NotFound(getUserRolesRequest.Email);
 
@@ -55,6 +57,8 @@ namespace t_board_backend.Controllers
         [HttpPost("createRole")]
         public async Task<IActionResult> CreateRole([FromBody] CreateRoleRequest createRoleRequest)
         {
+            if (ModelState.IsValid is false) return BadRequest(createRoleRequest);
+
             var roleCreated = await _roleManager.CreateAsync(new IdentityRole(createRoleRequest.RoleName));
 
             if (roleCreated.Succeeded is false) return UnprocessableEntity(roleCreated.Errors);
@@ -65,12 +69,15 @@ namespace t_board_backend.Controllers
         [HttpPost("addUserRole")]
         public async Task<IActionResult> AddUserRole([FromBody] UserRoleRequest userRoleRequest)
         {
-            // Find methods search with normalized value
-            var userEmail = userRoleRequest.UserEmail.ToUpper();
+            if (ModelState.IsValid is false) return BadRequest(userRoleRequest);
+
+            var userEmail = userRoleRequest.UserEmail;
+
             var user = await _userManager.FindByEmailAsync(userEmail);
             if (user is null) return NotFound(user);
 
-            var roleName = userRoleRequest.RoleName.ToUpper();
+            var roleName = userRoleRequest.RoleName;
+
             var role = await _roleManager.FindByNameAsync(roleName);
             if (role is null) return NotFound(role);
 
@@ -84,12 +91,15 @@ namespace t_board_backend.Controllers
         [HttpPost("removeUserRole")]
         public async Task<IActionResult> RemoveUserRole([FromBody] UserRoleRequest userRoleRequest)
         {
-            // Find methods search with normalized value
-            var userEmail = userRoleRequest.UserEmail.ToUpper();
+            if (ModelState.IsValid is false) return BadRequest(userRoleRequest);
+
+            var userEmail = userRoleRequest.UserEmail;
+
             var user = await _userManager.FindByEmailAsync(userEmail);
             if (user is null) return NotFound(user);
 
-            var roleName = userRoleRequest.RoleName.ToUpper();
+            var roleName = userRoleRequest.RoleName;
+
             var role = await _roleManager.FindByNameAsync(roleName);
             if (role is null) return NotFound(role);
 
