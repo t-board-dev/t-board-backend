@@ -7,9 +7,6 @@ using System.Threading.Tasks;
 using t_board.Entity;
 using t_board.Services.Contracts;
 using t_board_backend.Models.Company;
-using t_board_backend.Models.Company.Dto;
-using t_board_backend.Models.User;
-using t_board_backend.Models.User.Dto;
 
 namespace t_board_backend.Controllers
 {
@@ -121,7 +118,7 @@ namespace t_board_backend.Controllers
             if (ownerRoleCreated.Succeeded is false) return UnprocessableEntity(ownerRoleCreated.Errors);
 
             await _dbContext.Companies.AddAsync(company);
-            
+
             var companyCreated = await _dbContext.SaveChangesAsync();
             if (companyCreated is 0) return UnprocessableEntity("Company could not created!");
 
