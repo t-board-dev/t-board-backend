@@ -1,23 +1,24 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace t_board.Entity
 {
     public class Company
     {
-        [Required]
+        public Company()
+        {
+            Brand = new HashSet<Brand>();
+        }
+
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [Required]
-        [MaxLength(256)]
         public string Name { get; set; }
 
-        [Required]
         public int Type { get; set; }
 
-        [Required]
-        [MaxLength(512)]
         public string Url { get; set; }
+
+        public virtual ICollection<Brand> Brand { get; set; }
     }
 }
