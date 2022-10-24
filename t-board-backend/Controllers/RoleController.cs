@@ -66,8 +66,8 @@ namespace t_board_backend.Controllers
             return Ok();
         }
 
-        [HttpPost("addUserRole")]
-        public async Task<IActionResult> AddUserRole([FromBody] UserRoleRequest userRoleRequest)
+        [HttpPost("addRoleToUser")]
+        public async Task<IActionResult> AddRoleToUser([FromBody] UserRoleRequest userRoleRequest)
         {
             if (ModelState.IsValid is false) return BadRequest(userRoleRequest);
 
