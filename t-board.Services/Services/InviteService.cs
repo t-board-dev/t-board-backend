@@ -7,7 +7,7 @@ using t_board.Services.Contracts;
 
 namespace t_board.Services.Services
 {
-    public class InviteService : IInviteService
+    public sealed class InviteService : IInviteService
     {
         private readonly TBoardDbContext _dbContext;
 
