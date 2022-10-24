@@ -47,7 +47,8 @@ builder.Services
 
     })
     .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<TBoardDbContext>();
+    .AddEntityFrameworkStores<TBoardDbContext>()
+    .AddDefaultTokenProviders();
 
 
 builder.Services.ConfigureApplicationCookie(options =>
