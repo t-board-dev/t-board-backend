@@ -2,8 +2,6 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
@@ -15,10 +13,8 @@ using t_board.Entity;
 using t_board.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-var connectionString = builder.Configuration.GetConnectionString("DbContextConnection") ?? throw new InvalidOperationException("Connection string 'DbContextConnection' not found.");
 
-builder.Services.AddDbContext<TBoardDbContext>(options =>
-    options.UseSqlServer(connectionString));
+builder.Services.AddDbContext<TBoardDbContext>();
 
 builder.Services
     .AddIdentity<TBoardUser, IdentityRole>(options =>
@@ -50,7 +46,6 @@ builder.Services
     .AddEntityFrameworkStores<TBoardDbContext>()
     .AddDefaultTokenProviders();
 
-
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.Name = "t-board-cookie";
@@ -77,8 +72,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
     };
 });
-
-
 
 builder.Services.AddControllers();
 

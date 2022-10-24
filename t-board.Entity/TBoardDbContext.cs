@@ -1,13 +1,20 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using System;
 
 namespace t_board.Entity;
 
 public class TBoardDbContext : IdentityDbContext
 {
-    public TBoardDbContext(DbContextOptions<TBoardDbContext> options)
+    private readonly IConfiguration _configuration;
+
+    public TBoardDbContext(
+        IConfiguration configuration,
+        DbContextOptions<TBoardDbContext> options)
         : base(options)
     {
+        _configuration = configuration;
     }
 
     public DbSet<TBoardUser> BoardUsers { get; set; }
@@ -74,5 +81,13 @@ public class TBoardDbContext : IdentityDbContext
             e.Property(bu => bu.BrandId).IsRequired();
             e.Property(bu => bu.UserId).IsRequired().HasMaxLength(450);
         });
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        var connectionString = _configuration.GetConnectionString("SQL_SERVER") ??
+            throw new InvalidOperationException("Connection string 'DbContextConnection' not found.");
+
+        optionsBuilder.UseSqlServer(connectionString);
     }
 }
