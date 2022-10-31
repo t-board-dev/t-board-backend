@@ -62,14 +62,17 @@ namespace t_board_backend.Controllers
             if (result.Succeeded)
             {
                 var userRoles = await _userManager.GetRolesAsync(user);
+                var userCompany = await _dbContext.CompanyUsers.Where(cu => cu.UserId == user.Id).Select(cu => cu.CompanyId).FirstOrDefaultAsync();
 
                 var claims = new[] {
                         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                         new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
+                        new Claim("id", user.Id),
                         new Claim("firstName", user.FirstName),
                         new Claim("lastName", user.LastName),
                         new Claim("email", user.Email),
                         new Claim("title", user.Title),
+                        new Claim("company", userCompany.ToString()),
                         new Claim("phoneNumber", user.PhoneNumber),
                         new Claim("roles", JsonConvert.SerializeObject(userRoles))
                 };
