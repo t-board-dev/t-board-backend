@@ -7,14 +7,14 @@ namespace t_board.Entity;
 
 public class TBoardDbContext : IdentityDbContext
 {
-    private readonly IConfiguration _configuration;
+    private readonly IConfiguration Configuration;
 
     public TBoardDbContext(
         IConfiguration configuration,
         DbContextOptions<TBoardDbContext> options)
         : base(options)
     {
-        _configuration = configuration;
+        Configuration = configuration;
     }
 
     public DbSet<TBoardUser> BoardUsers { get; set; }
@@ -85,7 +85,7 @@ public class TBoardDbContext : IdentityDbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        var connectionString = _configuration.GetConnectionString("SQL_SERVER") ??
+        var connectionString = Configuration.GetConnectionString("SQL_SERVER") ??
             throw new InvalidOperationException("Connection string 'DbContextConnection' not found.");
 
         optionsBuilder.UseSqlServer(connectionString);

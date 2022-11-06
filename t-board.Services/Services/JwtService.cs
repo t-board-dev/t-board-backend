@@ -15,15 +15,15 @@ namespace t_board.Services.Services
         private readonly string _secretKey;
         private readonly string _expireMinute;
 
-        private readonly IConfiguration _configuration;
+        private readonly IConfiguration Configuration;
 
         public JwtService(
             IConfiguration configuration)
         {
-            _configuration = configuration;
+            Configuration = configuration;
 
-            _secretKey = _configuration["Jwt:Key"];
-            _expireMinute = _configuration["Jwt:ExpireMinute"];
+            _secretKey = Configuration["Jwt:Key"];
+            _expireMinute = Configuration["Jwt:ExpireMinute"];
         }
 
         /// <summary>
