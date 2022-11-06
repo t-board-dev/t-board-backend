@@ -2,15 +2,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json;
 using System;
 using System.Data;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
 using t_board.Entity;
 using t_board.Services.Contracts;
@@ -22,8 +16,9 @@ namespace t_board_backend.Controllers
     [Route("user/")]
     public class UserController : Controller
     {
-        private readonly IConfiguration _configuration;
         private readonly IInviteService _inviteService;
+        private readonly IJwtService _jwtService;
+        private readonly IUserService _userService;
 
         private readonly UserManager<TBoardUser> _userManager;
         private readonly SignInManager<TBoardUser> _signInManager;
@@ -31,14 +26,16 @@ namespace t_board_backend.Controllers
         private readonly TBoardDbContext _dbContext;
 
         public UserController(
-            IConfiguration configuration,
             IInviteService inviteService,
+            IJwtService jwtService,
+            IUserService userService,
             UserManager<TBoardUser> userManager,
             SignInManager<TBoardUser> signInManager,
             TBoardDbContext dbContext)
         {
-            _configuration = configuration;
             _inviteService = inviteService;
+            _jwtService = jwtService;
+            _userService = userService;
 
             _userManager = userManager;
             _signInManager = signInManager;
@@ -61,32 +58,11 @@ namespace t_board_backend.Controllers
             var result = await _signInManager.PasswordSignInAsync(user.UserName, signInRequest.Password, false, false);
             if (result.Succeeded)
             {
-                var userRoles = await _userManager.GetRolesAsync(user);
-                var userCompany = await _dbContext.CompanyUsers.Where(cu => cu.UserId == user.Id).Select(cu => cu.CompanyId).FirstOrDefaultAsync();
+                var claims = await _userService.GetUserClaims(user);
 
-                var claims = new[] {
-                        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                        new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
-                        new Claim("id", user.Id),
-                        new Claim("firstName", user.FirstName),
-                        new Claim("lastName", user.LastName),
-                        new Claim("email", user.Email),
-                        new Claim("title", user.Title),
-                        new Claim("company", userCompany.ToString()),
-                        new Claim("phoneNumber", user.PhoneNumber),
-                        new Claim("roles", JsonConvert.SerializeObject(userRoles))
-                };
+                var token = _jwtService.GenerateToken(claims);
 
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-                var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-                var token = new JwtSecurityToken(
-                    _configuration["Jwt:Issuer"],
-                    _configuration["Jwt:Audience"],
-                    claims,
-                    expires: DateTime.UtcNow.AddMinutes(60),
-                    signingCredentials: signIn);
-
-                return Ok(new JwtSecurityTokenHandler().WriteToken(token));
+                return Ok(token);
             }
 
             if (result.IsLockedOut) return Forbid("Account is locked!");
