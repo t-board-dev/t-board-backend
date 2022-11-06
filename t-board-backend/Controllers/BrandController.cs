@@ -2,10 +2,13 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using t_board.Entity;
 using t_board.Services.Contracts;
+using t_board_backend.Extensions;
 using t_board_backend.Models.Brand;
 
 namespace t_board_backend.Controllers
@@ -35,7 +38,16 @@ namespace t_board_backend.Controllers
         [HttpGet("getBrands")]
         public async Task<IActionResult> GetBrands()
         {
+            Expression<Func<Brand, bool>> expression = b => b.CompanyId > 0;
+
+            if (HttpContext.IsCurrentUserAdmin() is false)
+            {
+                var companyId = await HttpContext.GetCurrentUserCompanyId();
+                expression = b => b.CompanyId == companyId;
+            }
+
             var brands = await _dbContext.Brands
+                .Where(expression)
                 .ToArrayAsync();
 
             return Ok(brands);
@@ -44,8 +56,12 @@ namespace t_board_backend.Controllers
         [HttpPost("getBrand")]
         public async Task<IActionResult> GetBrand(int brandId)
         {
+            var companyId = await HttpContext.GetCurrentUserCompanyId();
+
             var brand = await _dbContext.Brands
-                .Where(c => c.Id == brandId)
+                .Where(b => 
+                    b.Id == brandId && 
+                    b.CompanyId == companyId)
                 .FirstOrDefaultAsync();
 
             if (brand == null) return NotFound(brandId);
@@ -56,8 +72,12 @@ namespace t_board_backend.Controllers
         [HttpPost("getBrandUsers")]
         public async Task<IActionResult> GetBrandUsers(int brandId)
         {
+            var companyId = await HttpContext.GetCurrentUserCompanyId();
+
             var brand = await _dbContext.Brands
-                .Where(c => c.Id == brandId)
+                .Where(b => 
+                    b.Id == brandId && 
+                    b.CompanyId == companyId)
                 .FirstOrDefaultAsync();
 
             if (brand == null) return NotFound(brandId);
@@ -77,6 +97,7 @@ namespace t_board_backend.Controllers
             return Ok(brandUsers);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("getCompanyBrands")]
         public async Task<IActionResult> GetCompanyBrands(int companyId)
         {
@@ -92,7 +113,7 @@ namespace t_board_backend.Controllers
         {
             var brand = new Brand
             {
-                CompanyId = createBrandRequest.CompanyId,
+                CompanyId = await HttpContext.GetCurrentUserCompanyId(),
                 Name = createBrandRequest.Name,
                 Keywords = createBrandRequest.Keywords,
                 LogoUrl = createBrandRequest.LogoUrl
@@ -108,6 +129,17 @@ namespace t_board_backend.Controllers
         [HttpPost("createBrandUser")]
         public async Task<IActionResult> CreateBrandUser([FromBody] CreateBrandUserRequest createBrandUserRequest)
         {
+            var companyId = await HttpContext.GetCurrentUserCompanyId();
+
+            foreach (var brandId in createBrandUserRequest.BrandIds)
+            {
+                var brand = await _dbContext.Brands
+                    .Where(b => b.Id == brandId && b.CompanyId == companyId)
+                    .FirstOrDefaultAsync();
+
+                if (brand == null) return NotFound(brandId);
+            }
+
             var user = new TBoardUser
             {
                 FirstName = createBrandUserRequest.UserFirstName,
@@ -134,7 +166,7 @@ namespace t_board_backend.Controllers
 
             var companyUser = new CompanyUser
             {
-                CompanyId = createBrandUserRequest.CompanyId,
+                CompanyId = await HttpContext.GetCurrentUserCompanyId(),
                 UserId = user.Id
             };
 

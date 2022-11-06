@@ -6,9 +6,6 @@ namespace t_board_backend.Models.Brand
     public class CreateBrandUserRequest
     {
         [Required]
-        [JsonProperty("companyId")]
-        public int CompanyId { get; set; }
-        [Required]
         [JsonProperty("brandIds")]
         public int[] BrandIds { get; set; }
         [Required]
