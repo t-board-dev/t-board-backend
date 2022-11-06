@@ -10,12 +10,6 @@ using t_board_backend.Models.Role;
 
 namespace t_board_backend.Controllers
 {
-    // TODO: 
-
-    // ActionFilter for exceptions
-    // Handle HTTP 500
-    // Logging
-
     [Authorize(Roles = "Admin")]
     [Route("role/")]
     public class RoleController : Controller
