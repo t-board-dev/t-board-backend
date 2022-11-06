@@ -1,39 +1,52 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using t_board.Services.Contracts;
+using t_board.Services.Services;
 
 namespace t_board_backend.Extensions
 {
     public static class HttpContextExtensions
     {
-        public static string GetCurrentUserId(this HttpContext context)
+        private static async Task<string> GetToken(this HttpContext context)
         {
-            if (context == null)
-                throw new ArgumentNullException(nameof(context));
-
-            if (context.User == null)
-                throw new ArgumentNullException(nameof(context.User));
-
-            var userId = context.User.Claims.FirstOrDefault(c => c.Type == "id")?.Value;
-            if (userId == null)
-                throw new ArgumentNullException(nameof(userId));
-
-            return userId;
+            var token = await context.GetTokenAsync("access_token");
+            if (string.IsNullOrEmpty(token))
+                throw new (nameof(token));
+            return token;
         }
 
-        public static int GetCurrentUserCompanyId(this HttpContext context)
+        private static async Task<Claim> GetClaimByType(this HttpContext context, string type)
         {
-            if (context == null)
-                throw new ArgumentNullException(nameof(context));
+            var token = await context.GetToken();
 
-            if (context.User == null)
-                throw new ArgumentNullException(nameof(context.User));
+            var _jwtService = (JwtService)context.RequestServices.GetService(typeof(IJwtService));
 
-            var userCompany = context.User.Claims.FirstOrDefault(c => c.Type == "company")?.Value;
-            if (userCompany == null)
-                throw new ArgumentNullException(nameof(userCompany));
+            var claims = _jwtService.GetTokenClaims(token);
+            return claims.FirstOrDefault(c => c.Type == type);
+        }
 
-            var companyId = int.Parse(userCompany);
+        public static async Task<string> GetCurrentUserId(this HttpContext context)
+        {
+            var idClaim = await context.GetClaimByType("id");
+
+            if (idClaim == null)
+                throw new (nameof(idClaim));
+
+            return idClaim.Value;
+        }
+
+        public static async Task<int> GetCurrentUserCompanyId(this HttpContext context)
+        {
+            var companyClaim = await context.GetClaimByType("company");
+
+            if (companyClaim == null)
+                throw new (nameof(companyClaim));
+
+            var companyId = int.Parse(companyClaim.Value);
 
             return companyId;
         }
@@ -44,7 +57,7 @@ namespace t_board_backend.Extensions
                 throw new ArgumentNullException(nameof(context));
 
             if (context.User == null)
-                throw new ArgumentNullException(nameof(context.User));
+                throw new (nameof(context.User));
 
             return context.User.IsInRole("Admin");
         }
