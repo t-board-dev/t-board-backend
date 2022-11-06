@@ -63,17 +63,16 @@ namespace t_board.Services.Services
             if (claims == null || claims.Any() is false)
                 throw new ArgumentException("Arguments to create token are not valid.");
 
-            var securityTokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddMinutes(Convert.ToInt32(_expireMinute)),
-                SigningCredentials = new SigningCredentials(GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256Signature)
-            };
+            var key = GetSymmetricSecurityKey();
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
-            var securityToken = jwtSecurityTokenHandler.CreateToken(securityTokenDescriptor);
+            var token = new JwtSecurityToken(
+                expires: DateTime.UtcNow.AddMinutes(Convert.ToInt32(_expireMinute)),
+                claims: claims,
+                signingCredentials: credentials
+            );
 
-            return jwtSecurityTokenHandler.WriteToken(securityToken);
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
         /// <summary>
@@ -115,6 +114,7 @@ namespace t_board.Services.Services
             {
                 ValidateIssuer = false,
                 ValidateAudience = false,
+                ValidateIssuerSigningKey = true,
                 IssuerSigningKey = GetSymmetricSecurityKey()
             };
         }

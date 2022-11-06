@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -47,7 +46,7 @@ namespace t_board.Services.Services
             var userRoles = await _userManager.GetRolesAsync(user);
             var userCompany = await _dbContext.CompanyUsers.Where(cu => cu.UserId == user.Id).Select(cu => cu.CompanyId).FirstOrDefaultAsync();
 
-            var claims = new[] {
+            var claims = new List<Claim> {
                         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                         new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
                         new Claim("id", user.Id),
@@ -56,9 +55,13 @@ namespace t_board.Services.Services
                         new Claim("email", user.Email),
                         new Claim("title", user.Title),
                         new Claim("company", userCompany.ToString()),
-                        new Claim("phoneNumber", user.PhoneNumber),
-                        new Claim("roles", JsonConvert.SerializeObject(userRoles))
+                        new Claim("phoneNumber", user.PhoneNumber)
                 };
+
+            foreach (var userRole in userRoles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, userRole));
+            }
 
             return claims;
         }
