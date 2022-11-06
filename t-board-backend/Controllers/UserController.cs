@@ -12,7 +12,6 @@ using t_board_backend.Models.User;
 
 namespace t_board_backend.Controllers
 {
-    [Authorize]
     [Route("user/")]
     public class UserController : Controller
     {
@@ -43,7 +42,6 @@ namespace t_board_backend.Controllers
             _dbContext = dbContext;
         }
 
-        [AllowAnonymous]
         [HttpPost("signIn")]
         public async Task<IActionResult> SignIn([FromBody] SignInRequest signInRequest)
         {
@@ -109,7 +107,6 @@ namespace t_board_backend.Controllers
             return Ok();
         }
 
-        [AllowAnonymous]
         [HttpPost("checkInvitation")]
         public async Task<IActionResult> CheckInvitation([FromBody] CheckInvitationRequest checkInvitationRequest)
         {
@@ -126,7 +123,6 @@ namespace t_board_backend.Controllers
             return Ok();
         }
 
-        [AllowAnonymous]
         [HttpPost("setPassword/{inviteCode}")]
         public async Task<IActionResult> SetPassword(string inviteCode, [FromBody] SetPasswordRequest setPasswordRequest)
         {
