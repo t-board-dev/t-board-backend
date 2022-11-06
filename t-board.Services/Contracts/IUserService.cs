@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using t_board.Entity;
 
 namespace t_board.Services.Contracts
@@ -7,5 +9,6 @@ namespace t_board.Services.Contracts
     {
         Task<(bool Succeeded, string Message)> CreateUser(TBoardUser user);
         Task<(bool Succeded, string Message)> AssignUserRole(string userEmail, string role);
+        Task<IEnumerable<Claim>> GetUserClaims(TBoardUser user);
     }
 }
