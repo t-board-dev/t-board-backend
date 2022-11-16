@@ -56,7 +56,7 @@ namespace t_board_backend.Controllers
                     Name = b.Name,
                     CompanyId = b.CompanyId,
                     Keywords = b.Keywords,
-                    LogoUrl = b.LogoUrl
+                    Design = b.Design
                 })
                 .ToArrayAsync();
 
@@ -79,7 +79,7 @@ namespace t_board_backend.Controllers
                     Name = b.Name,
                     CompanyId = b.CompanyId,
                     Keywords = b.Keywords,
-                    LogoUrl = b.LogoUrl
+                    Design = b.Design
                 })
                 .FirstOrDefaultAsync();
 
@@ -130,7 +130,7 @@ namespace t_board_backend.Controllers
                     Name = b.Name,
                     CompanyId = b.CompanyId,
                     Keywords = b.Keywords,
-                    LogoUrl = b.LogoUrl
+                    Design = b.Design
                 })
                 .ToArrayAsync();
 
@@ -145,7 +145,7 @@ namespace t_board_backend.Controllers
                 CompanyId = await HttpContext.GetCurrentUserCompanyId(),
                 Name = createBrandRequest.Name,
                 Keywords = createBrandRequest.Keywords,
-                LogoUrl = createBrandRequest.LogoUrl
+                Design = createBrandRequest.Design
             };
 
             await _dbContext.Brands.AddAsync(brand);

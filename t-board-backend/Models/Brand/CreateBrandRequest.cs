@@ -12,7 +12,7 @@ namespace t_board_backend.Models.Brand
         [JsonProperty("keywords")]
         public string Keywords { get; set; }
         [Required]
-        [JsonProperty("logoUrl")]
-        public string LogoUrl { get; set; }
+        [JsonProperty("design")]
+        public string Design { get; set; }
     }
 }

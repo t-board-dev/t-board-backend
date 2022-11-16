@@ -14,7 +14,7 @@ namespace t_board.Entity
 
         public string Keywords { get; set; }
 
-        public string LogoUrl { get; set; }
+        public string Design { get; set; }
 
         public virtual Company Company { get; set; }
     }

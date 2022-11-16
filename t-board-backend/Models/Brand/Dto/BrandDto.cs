@@ -6,6 +6,6 @@
         public int CompanyId { get; set; }
         public string Name { get; set; }
         public string Keywords { get; set; }
-        public string LogoUrl { get; set; }
+        public string Design { get; set; }
     }
 }
