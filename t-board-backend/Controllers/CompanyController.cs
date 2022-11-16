@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using t_board.Entity;
 using t_board.Services.Contracts;
 using t_board_backend.Models.Company;
+using t_board_backend.Models.Company.Dto;
 
 namespace t_board_backend.Controllers
 {
@@ -33,19 +34,34 @@ namespace t_board_backend.Controllers
         }
 
         [HttpGet("getCompanies")]
+        [ProducesResponseType(typeof(CompanyDto[]), 200)]
         public async Task<IActionResult> GetCompanies()
         {
-            var companies = await _dbContext.Companies
+            var companies = await _dbContext.Companies.Select(c => new CompanyDto()
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Type = c.Type,
+                Url = c.Url
+            })
                 .ToArrayAsync();
 
             return Ok(companies);
         }
 
         [HttpPost("getCompany")]
+        [ProducesResponseType(typeof(CompanyDto), 200)]
         public async Task<IActionResult> GetCompany(int companyId)
         {
             var company = await _dbContext.Companies
                 .Where(c => c.Id == companyId)
+                .Select(c => new CompanyDto()
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Type = c.Type,
+                    Url = c.Url
+                })
                 .FirstOrDefaultAsync();
 
             if (company == null) return NotFound(companyId);
@@ -54,10 +70,11 @@ namespace t_board_backend.Controllers
         }
 
         [HttpPost("getCompanyTypes")]
+        [ProducesResponseType(typeof(CompanyTypeDto[]), 200)]
         public async Task<IActionResult> GetCompanyTypes()
         {
             var companyTypes = await _dbContext.CompanyTypes
-                .Select(t => new
+                .Select(t => new CompanyTypeDto()
                 {
                     Name = t.Name,
                     Code = t.Code
@@ -68,6 +85,7 @@ namespace t_board_backend.Controllers
         }
 
         [HttpPost("getCompanyUsers")]
+        [ProducesResponseType(typeof(CompanyUserDto[]), 200)]
         public async Task<IActionResult> GetCompanyUsers(int companyId)
         {
             var company = await _dbContext.Companies
@@ -78,7 +96,7 @@ namespace t_board_backend.Controllers
 
             var companyUsers = await _dbContext.CompanyUsers
                 .Join(_dbContext.BoardUsers, cu => cu.UserId, u => u.Id,
-                (cu, u) => new
+                (cu, u) => new CompanyUserDto()
                 {
                     CompanyId = cu.CompanyId,
                     UserFirstName = u.FirstName,
@@ -92,7 +110,7 @@ namespace t_board_backend.Controllers
         }
 
         [HttpPost("createCompany")]
-        public async Task<IActionResult> CreatCompany([FromBody] CreateCompanyRequest createCompanyRequest)
+        public async Task<IActionResult> CreateCompany([FromBody] CreateCompanyRequest createCompanyRequest)
         {
             var company = new Company
             {

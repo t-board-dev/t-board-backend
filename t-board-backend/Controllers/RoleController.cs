@@ -30,12 +30,14 @@ namespace t_board_backend.Controllers
         }
 
         [HttpGet("getRoles")]
+        [ProducesResponseType(typeof(IdentityRole[]), 200)]
         public async Task<IActionResult> GetRoles()
         {
             return Ok(_roleManager.Roles?.Select(r => r.NormalizedName).ToArray() ?? Array.Empty<string>());
         }
 
         [HttpPost("getUserRoles")]
+        [ProducesResponseType(typeof(string[]), 200)]
         public async Task<IActionResult> GetUserRoles([FromBody] GetUserRolesRequest getUserRolesRequest)
         {
             if (ModelState.IsValid is false) return BadRequest(getUserRolesRequest);

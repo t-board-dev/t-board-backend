@@ -43,6 +43,7 @@ namespace t_board_backend.Controllers
         }
 
         [HttpPost("signIn")]
+        [ProducesResponseType(typeof(string), 200)]
         public async Task<IActionResult> SignIn([FromBody] SignInRequest signInRequest)
         {
             if (ModelState.IsValid is false) return BadRequest(signInRequest);

@@ -10,6 +10,7 @@ using t_board.Entity;
 using t_board.Services.Contracts;
 using t_board_backend.Extensions;
 using t_board_backend.Models.Brand;
+using t_board_backend.Models.Brand.Dto;
 
 namespace t_board_backend.Controllers
 {
@@ -36,6 +37,7 @@ namespace t_board_backend.Controllers
         }
 
         [HttpGet("getBrands")]
+        [ProducesResponseType(typeof(BrandDto[]), 200)]
         public async Task<IActionResult> GetBrands()
         {
             Expression<Func<Brand, bool>> expression = b => b.CompanyId > 0;
@@ -48,20 +50,37 @@ namespace t_board_backend.Controllers
 
             var brands = await _dbContext.Brands
                 .Where(expression)
+                .Select(b => new BrandDto()
+                {
+                    Id = b.Id,
+                    Name = b.Name,
+                    CompanyId = b.CompanyId,
+                    Keywords = b.Keywords,
+                    LogoUrl = b.LogoUrl
+                })
                 .ToArrayAsync();
 
             return Ok(brands);
         }
 
         [HttpPost("getBrand")]
+        [ProducesResponseType(typeof(BrandDto), 200)]
         public async Task<IActionResult> GetBrand(int brandId)
         {
             var companyId = await HttpContext.GetCurrentUserCompanyId();
 
             var brand = await _dbContext.Brands
-                .Where(b => 
-                    b.Id == brandId && 
+                .Where(b =>
+                    b.Id == brandId &&
                     b.CompanyId == companyId)
+                .Select(b => new BrandDto()
+                {
+                    Id = b.Id,
+                    Name = b.Name,
+                    CompanyId = b.CompanyId,
+                    Keywords = b.Keywords,
+                    LogoUrl = b.LogoUrl
+                })
                 .FirstOrDefaultAsync();
 
             if (brand == null) return NotFound(brandId);
@@ -70,13 +89,14 @@ namespace t_board_backend.Controllers
         }
 
         [HttpPost("getBrandUsers")]
+        [ProducesResponseType(typeof(BrandUserDto[]), 200)]
         public async Task<IActionResult> GetBrandUsers(int brandId)
         {
             var companyId = await HttpContext.GetCurrentUserCompanyId();
 
             var brand = await _dbContext.Brands
-                .Where(b => 
-                    b.Id == brandId && 
+                .Where(b =>
+                    b.Id == brandId &&
                     b.CompanyId == companyId)
                 .FirstOrDefaultAsync();
 
@@ -84,7 +104,7 @@ namespace t_board_backend.Controllers
 
             var brandUsers = await _dbContext.BrandUsers
                 .Join(_dbContext.BoardUsers, bu => bu.UserId, u => u.Id,
-                (bu, u) => new
+                (bu, u) => new BrandUserDto()
                 {
                     BrandId = bu.BrandId,
                     UserFirstName = u.FirstName,
@@ -99,10 +119,19 @@ namespace t_board_backend.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPost("getCompanyBrands")]
+        [ProducesResponseType(typeof(BrandDto[]), 200)]
         public async Task<IActionResult> GetCompanyBrands(int companyId)
         {
             var brands = await _dbContext.Brands
                 .Where(b => b.CompanyId == companyId)
+                .Select(b => new BrandDto()
+                {
+                    Id = b.Id,
+                    Name = b.Name,
+                    CompanyId = b.CompanyId,
+                    Keywords = b.Keywords,
+                    LogoUrl = b.LogoUrl
+                })
                 .ToArrayAsync();
 
             return Ok(brands);
