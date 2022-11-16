@@ -4,25 +4,26 @@ using System.Linq;
 using System.Threading.Tasks;
 using t_board.Entity;
 using t_board.Services.Contracts;
+using t_board.Services.Models;
 
 namespace t_board.Services.Services
 {
     public sealed class InviteService : IInviteService
     {
+        private readonly IMailService _mailService;
+
         private readonly TBoardDbContext _dbContext;
 
         public InviteService(
+            IMailService mailService,
             TBoardDbContext dbcontext)
         {
+            _mailService = mailService;
+
             _dbContext = dbcontext;
         }
 
         public async Task<(bool Succeeded, string Message)> SendInvitation(string userEmail)
-        {
-            return await SendInvitationCore(userEmail);
-        }
-
-        private async Task<(bool Succeeded, string Message)> SendInvitationCore(string userEmail)
         {
             var invitation = await _dbContext.UserInvitations.Where(i => i.UserEmail == userEmail).FirstOrDefaultAsync();
 
@@ -48,8 +49,13 @@ namespace t_board.Services.Services
 
             await _dbContext.SaveChangesAsync();
 
-            // TODO:
-            // Send invitation
+            await _mailService.SendMail(new MailModel()
+            {
+                Subject = "T-Board Invitation",
+                Body = invitation.InviteCode,
+                To = userEmail
+            },
+            false);
 
             return (true, $"Invitation has been sent for the user with the mail {userEmail}!");
         }

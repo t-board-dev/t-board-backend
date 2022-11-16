@@ -10,7 +10,7 @@ using t_board.Services.Contracts;
 
 namespace t_board.Services.Services
 {
-    public class JwtService : IJwtService
+    public sealed class JwtService : IJwtService
     {
         private readonly string _secretKey;
         private readonly string _expireMinute;
