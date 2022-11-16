@@ -7,7 +7,7 @@ namespace t_board.Entity
     {
         public Company()
         {
-            Brand = new HashSet<Brand>();
+            Brands = new HashSet<Brand>();
         }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -19,6 +19,6 @@ namespace t_board.Entity
 
         public string Url { get; set; }
 
-        public virtual ICollection<Brand> Brand { get; set; }
+        public virtual ICollection<Brand> Brands { get; set; }
     }
 }

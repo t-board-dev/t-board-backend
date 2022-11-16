@@ -1,10 +1,16 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using t_board.Entity.Entity;
 
 namespace t_board.Entity
 {
     public class Brand
     {
+        public Brand()
+        {
+            Boards = new HashSet<Board>();
+        }
+
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
@@ -17,5 +23,7 @@ namespace t_board.Entity
         public string Design { get; set; }
 
         public virtual Company Company { get; set; }
+
+        public virtual ICollection<Board> Boards { get; set; }
     }
 }

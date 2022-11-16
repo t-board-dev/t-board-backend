@@ -17,6 +17,10 @@ public class TBoardDbContext : IdentityDbContext
         Configuration = configuration;
     }
 
+    public DbSet<Board> Boards { get; set; }
+    public DbSet<BoardItem> BoardItems { get; set; }
+    public DbSet<BoardItemType> BoardItemTypes { get; set; }
+
     public DbSet<TBoardUser> BoardUsers { get; set; }
 
     public DbSet<UserInvitation> UserInvitations { get; set; }
@@ -31,6 +35,42 @@ public class TBoardDbContext : IdentityDbContext
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+
+        builder.Entity<Board>(e =>
+        {
+            e.Property(b => b.BrandId).IsRequired();
+            e.Property(i => i.Name).IsRequired().HasMaxLength(256);
+            e.Property(i => i.Description).IsRequired().HasMaxLength(512);
+            e.Property(i => i.Status).IsRequired();
+            e.Property(i => i.Design).IsRequired().HasMaxLength(512);
+
+            e.HasOne(b => b.Brand)
+             .WithMany(c => c.Boards)
+             .HasForeignKey(b => b.BrandId)
+             .OnDelete(DeleteBehavior.ClientSetNull)
+             .HasConstraintName("FK_Board_Brand");
+        });
+
+        builder.Entity<BoardItem>(e =>
+        {
+            e.Property(i => i.Title).IsRequired().HasMaxLength(256);
+            e.Property(i => i.Type).IsRequired();
+            e.Property(i => i.GridData).IsRequired().HasMaxLength(512);
+            e.Property(i => i.CustomGridData).IsRequired().HasMaxLength(512);
+            e.Property(i => i.Data).IsRequired().HasMaxLength(512);
+
+            e.HasOne(b => b.Board)
+             .WithMany(c => c.BoardItems)
+             .HasForeignKey(b => b.BoardId)
+             .OnDelete(DeleteBehavior.ClientSetNull)
+             .HasConstraintName("FK_BoardItem_Board");
+        });
+
+        builder.Entity<BoardItemType>(e =>
+        {
+            e.Property(t => t.Name).IsRequired().HasMaxLength(256);
+            e.Property(t => t.Code).IsRequired().HasMaxLength(256);
+        });
 
         builder.Entity<UserInvitation>(e =>
         {
@@ -67,10 +107,10 @@ public class TBoardDbContext : IdentityDbContext
             e.Property(b => b.CompanyId).IsRequired();
             e.Property(b => b.Name).IsRequired().HasMaxLength(256);
             e.Property(b => b.Keywords).HasMaxLength(512);
-            e.Property(b => b.LogoUrl).HasMaxLength(512);
+            e.Property(b => b.Design).HasMaxLength(512);
 
             e.HasOne(b => b.Company)
-             .WithMany(c => c.Brand)
+             .WithMany(c => c.Brands)
              .HasForeignKey(b => b.CompanyId)
              .OnDelete(DeleteBehavior.ClientSetNull)
              .HasConstraintName("FK_Brand_Company");
