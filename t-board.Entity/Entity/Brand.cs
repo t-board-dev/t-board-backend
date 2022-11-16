@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using t_board.Entity.Entity;
 
 namespace t_board.Entity
 {
