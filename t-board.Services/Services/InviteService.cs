@@ -32,20 +32,16 @@ namespace t_board.Services.Services
                 invitation = new UserInvitation
                 {
                     UserEmail = userEmail,
-                    InviteCode = Guid.NewGuid().ToString(),
-                    InviteDate = DateTime.Now,
-                    ExpireDate = DateTime.Today.AddDays(2),
+                    InviteCode = Guid.NewGuid().ToString()
                 };
 
                 _dbContext.Add(invitation);
             }
-            else
-            {
-                if (invitation.IsConfirmed) return (false, $"User with the mail '{userEmail}' has already confirmed the invitation!");
 
-                invitation.InviteDate = DateTime.Now;
-                invitation.ExpireDate = DateTime.Today.AddDays(2);
-            }
+            if (invitation.IsConfirmed) return (false, $"User with the mail '{userEmail}' has already confirmed the invitation!");
+
+            invitation.InviteDate = DateTime.Now;
+            invitation.ExpireDate = DateTime.Today.AddDays(2);
 
             await _dbContext.SaveChangesAsync();
 
