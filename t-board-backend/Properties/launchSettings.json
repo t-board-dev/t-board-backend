@@ -16,7 +16,11 @@
       "launchUrl": "swagger",
       "applicationUrl": "https://localhost:7038;http://localhost:5038",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+
+        "SENDGRID_API": "hjNWlMNpQ0KQKCWCxX-5Xw",
+        "SENDGRID_KEY": "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",
+        "MAIL_FROM": "info@board.com.tr"
       }
     },
     "PROD_t_board_backend": {
@@ -26,7 +30,11 @@
       "launchUrl": "swagger",
       "applicationUrl": "https://localhost:7038;http://localhost:5038",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Production"
+        "ASPNETCORE_ENVIRONMENT": "Production",
+
+        "SENDGRID_API": "hjNWlMNpQ0KQKCWCxX-5Xw",
+        "SENDGRID_KEY": "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",
+        "MAIL_FROM": "info@board.com.tr"
       }
     },
     "IIS Express": {

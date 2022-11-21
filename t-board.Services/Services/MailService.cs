@@ -1,7 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using SendGrid;
+using SendGrid.Helpers.Mail;
 using System;
-using System.Net;
-using System.Net.Mail;
 using System.Threading.Tasks;
 using t_board.Services.Contracts;
 using t_board.Services.Models;
@@ -10,15 +9,31 @@ namespace t_board.Services.Services
 {
     public sealed class MailService : IMailService
     {
-        private readonly IConfiguration Configuration;
-
-        public MailService(
-            IConfiguration configuration)
+        public async Task SendMail(MailModel mailModel, bool isHtml)
         {
-            Configuration = configuration;
+            ValidateMailModel(mailModel);
+
+            var apiKey = Environment.GetEnvironmentVariable("SENDGRID_KEY");
+            var client = new SendGridClient(apiKey);
+
+            var mailFrom = Environment.GetEnvironmentVariable("MAIL_FROM");
+            var from = new EmailAddress(mailFrom);
+            var to = new EmailAddress(mailModel.To);
+
+            var email = isHtml ?
+                MailHelper.CreateSingleEmail(from, to, mailModel.Subject, mailModel.Subject, string.Empty) :
+                MailHelper.CreateSingleEmail(from, to, mailModel.Subject, string.Empty, mailModel.Subject);
+
+            var response = await client.SendEmailAsync(email);
+
+            if (response.IsSuccessStatusCode is false)
+            {
+                var responseBody = await response.Body.ReadAsStringAsync();
+                throw new($"Mail could not send! {responseBody}");
+            }
         }
 
-        public async Task SendMail(MailModel mailModel, bool isHtml)
+        private void ValidateMailModel(MailModel mailModel)
         {
             if (string.IsNullOrEmpty(mailModel.To))
                 throw new ArgumentNullException("to");
@@ -28,36 +43,6 @@ namespace t_board.Services.Services
 
             if (string.IsNullOrEmpty(mailModel.Body))
                 throw new ArgumentNullException("body");
-
-            var username = Configuration["Smtp:Username"];
-            var password = Configuration["Smtp:Password"];
-
-            var credentials = new NetworkCredential(username, password);
-
-            var server = Configuration["Smtp:ServerURL"];
-            var port = Convert.ToInt32(Configuration["Smtp:Port"]);
-
-            var smtpClient = new SmtpClient(server)
-            {
-                Port = port,
-                Credentials = credentials,
-                EnableSsl = false,
-            };
-
-            var mailMessage = new MailMessage
-            {
-                From = new MailAddress(username),
-                Subject = mailModel.Subject,
-                Body = mailModel.Body,
-                IsBodyHtml = isHtml,
-            };
-
-            mailMessage.To.Add(mailModel.To);
-
-            if (string.IsNullOrEmpty(mailModel.Cc) is false)
-                mailMessage.CC.Add(mailModel.Cc);
-
-            await smtpClient.SendMailAsync(mailMessage);
         }
     }
 }
