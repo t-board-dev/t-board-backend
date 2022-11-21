@@ -1,12 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using t_board.Entity;
+using t_board_backend.Extensions;
 using t_board_backend.Models.Board;
 
 namespace t_board_backend.Controllers
 {
+    [Authorize]
     [Route("board/")]
     public class BoardController : Controller
     {
@@ -22,6 +26,11 @@ namespace t_board_backend.Controllers
         [ProducesResponseType(typeof(BoardDto[]), 200)]
         public async Task<IActionResult> GetBrandBoards(int brandId)
         {
+            var currentUser = await HttpContext.GetCurrentUserId();
+
+            var brandUser = await _dbContext.BrandUsers.Where(u => u.UserId == currentUser && u.BrandId == brandId).FirstOrDefaultAsync();
+            if (brandUser == null) return NotFound();
+
             var boards = await _dbContext.Boards
                 .Where(b => b.BrandId == brandId)
                 .Select(b => new BoardDto()
@@ -42,7 +51,14 @@ namespace t_board_backend.Controllers
         [ProducesResponseType(typeof(BoardItemDto[]), 200)]
         public async Task<IActionResult> GetBoardItems(int boardId)
         {
-            var boardItems = await _dbContext.BoardItems
+            var board = await _dbContext.Boards.Where(b => b.Id == boardId).Include(b => b.BoardItems).FirstOrDefaultAsync();
+
+            var currentUser = await HttpContext.GetCurrentUserId();
+
+            var brandUser = await _dbContext.BrandUsers.Where(u => u.UserId == currentUser && u.BrandId == board.BrandId).FirstOrDefaultAsync();
+            if (brandUser == null) return NotFound();
+
+            var boardItems = board.BoardItems
                 .Where(b => b.BoardId == boardId)
                 .Select(b => new BoardItemDto()
                 {
@@ -54,7 +70,7 @@ namespace t_board_backend.Controllers
                     CustomGridData = b.CustomGridData,
                     Data = b.Data
                 })
-                .ToArrayAsync();
+                .ToArray();
 
             return Ok(boardItems);
         }
@@ -78,6 +94,11 @@ namespace t_board_backend.Controllers
         [HttpPost("createBoard")]
         public async Task<IActionResult> CreateBoard(BoardDto board)
         {
+            var currentUser = await HttpContext.GetCurrentUserId();
+
+            var brandUser = await _dbContext.BrandUsers.Where(u => u.UserId == currentUser && u.BrandId == board.BrandId).FirstOrDefaultAsync();
+            if (brandUser == null) return Unauthorized();
+
             var newBoard = new Board()
             {
                 BrandId = board.BrandId,
@@ -98,6 +119,11 @@ namespace t_board_backend.Controllers
         {
             var board = await _dbContext.Boards.Where(b => b.Id == boardItem.BoardId).FirstOrDefaultAsync();
             if (board == null) BadRequest("Board could not found!");
+
+            var currentUser = await HttpContext.GetCurrentUserId();
+
+            var brandUser = await _dbContext.BrandUsers.Where(u => u.UserId == currentUser && u.BrandId == board.BrandId).FirstOrDefaultAsync();
+            if (brandUser == null) return Unauthorized();
 
             var type = await _dbContext.BoardItemTypes.Where(t => t.Id == boardItem.Type).FirstOrDefaultAsync();
             if (type == null) BadRequest($"Board item type could not found!");
