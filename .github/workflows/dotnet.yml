@@ -36,5 +36,5 @@ jobs:
         host: ${{ secrets.FTP_HOST }}
         user: ${{ secrets.FTP_USER }}
         password: ${{ secrets.FTP_PASSWORD }}
-        localDir: "/home/runner/work/board/board/board/publish"
+        localDir: "/board/publish"
         remoteDir: "board"
