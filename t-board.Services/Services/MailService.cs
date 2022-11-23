@@ -1,4 +1,5 @@
-﻿using SendGrid;
+﻿using Microsoft.Extensions.Configuration;
+using SendGrid;
 using SendGrid.Helpers.Mail;
 using System;
 using System.Threading.Tasks;
@@ -9,14 +10,22 @@ namespace t_board.Services.Services
 {
     public sealed class MailService : IMailService
     {
+        private readonly IConfiguration Configuration;
+
+        public MailService(
+            IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
         public async Task SendMail(MailModel mailModel, bool isHtml)
         {
             ValidateMailModel(mailModel);
 
-            var apiKey = Environment.GetEnvironmentVariable("SENDGRID_KEY");
+            var apiKey = Configuration["Mail:SENDGRID_KEY"];
             var client = new SendGridClient(apiKey);
 
-            var mailFrom = Environment.GetEnvironmentVariable("MAIL_FROM");
+            var mailFrom = Configuration["Mail:MAIL_FROM"];
             var from = new EmailAddress(mailFrom);
             var to = new EmailAddress(mailModel.To);
 
