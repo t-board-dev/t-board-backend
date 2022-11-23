@@ -31,10 +31,10 @@ jobs:
       run: dotnet publish --configuration Release --no-restore --output ./publish
       
     - name: FTP-Deploy-Action
-      uses: sebastianpopp/ftp-action@releases/v2
+      uses: SamKirkland/FTP-Deploy-Action@4.3.2
       with:
         host: ${{ secrets.FTP_HOST }}
         user: ${{ secrets.FTP_USER }}
         password: ${{ secrets.FTP_PASSWORD }}
-        localDir: "/home/runner/work/t-board-backend/t-board-backend/publish/"
-        remoteDir: "/board/publish"
+        local-dir: "/home/runner/work/t-board-backend/t-board-backend/publish/"
+        server-dir: "/board/publish"
