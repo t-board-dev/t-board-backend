@@ -20,7 +20,21 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 6.0.x
-    - name: Restore dependencies
+    
+    - name: Install dependencies
       run: dotnet restore
+
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Run the Publish
+      run: dotnet publish --configuration Release --no-restore --output ./publish
+      
+    - name: FTP-Deploy-Action
+      uses: sebastianpopp/ftp-action@releases/v2
+      with:
+        host: ${{ secrets.FTP_HOST }}
+        user: ${{ secrets.FTP_USER }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        localDir: "/home/runner/work/board/board/board/publish"
+        remoteDir: "board"
