@@ -36,5 +36,5 @@ jobs:
         server: ${{ secrets.FTP_HOST }}
         username: ${{ secrets.FTP_USER }}
         password: ${{ secrets.FTP_PASSWORD }}
-        local-dir: "/home/runner/work/t-board-backend/t-board-backend/publish/"
-        server-dir: "/board/publish/"
+        localDir: "/home/runner/work/t-board-backend/t-board-backend/publish/"
+        remoteDir: "/api"
