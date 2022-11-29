@@ -29,7 +29,16 @@ jobs:
 
     - name: Run the Publish
       run: dotnet publish --configuration Release --no-restore --output ./publish
-      
+    
+    - name: Rename _app_offline.htm back to app_offline.htm to stop the site
+      shell: python
+      run: |
+        import ftplib
+        ftp = ftplib.FTP('${{ secrets.FTP_HOST }}')
+        ftp.login('${{ secrets.FTP_USER }}', '${{ secrets.FTP_PASSWORD }}')
+        ftp.rename('/api/_app_offline.htm', '/api/app_offline.htm')
+        ftp.quit()
+    
     - name: FTP-Deploy-Action
       uses: SamKirkland/FTP-Deploy-Action@4.3.2
       with:
@@ -38,3 +47,12 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         local-Dir: "/home/runner/work/t-board-backend/t-board-backend/publish/"
         remote-Dir: "/api/"
+        
+    - name: Rename app_offline.htm back to _app_offline.htm to start the site
+      shell: python
+      run: |
+        import ftplib
+        ftp = ftplib.FTP('${{ secrets.FTP_HOST }}')
+        ftp.login('${{ secrets.FTP_USER }}', '${{ secrets.FTP_PASSWORD }}')
+        ftp.rename('/api/app_offline.htm', '/api/_app_offline.htm')
+        ftp.quit()
