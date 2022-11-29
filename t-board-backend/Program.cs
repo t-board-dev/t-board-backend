@@ -48,9 +48,11 @@ builder.Services
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
+    var expireMinute = Convert.ToInt32(builder.Configuration["Jwt:ExpireMinute"]);
     options.Cookie.Name = "t-board-cookie";
     options.Cookie.HttpOnly = true;
-    options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+    options.Cookie.Expiration = TimeSpan.FromMinutes(expireMinute);
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(expireMinute);
 
     options.ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
     options.SlidingExpiration = true;
