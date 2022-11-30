@@ -109,6 +109,16 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+var corsPolicyName = "t-board-dev-cors-policy";
+builder.Services.AddCors(o => o.AddPolicy(corsPolicyName,
+                      builder =>
+                      {
+                          builder.WithOrigins(
+                              "http://localhost:3000")
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
+                      }));
+
 builder.Services.AddTBoardServices();
 
 var app = builder.Build();
@@ -117,11 +127,7 @@ var app = builder.Build();
 //{
 app.UseSwagger();
 app.UseSwaggerUI();
-app.UseCors(builder =>
-    builder.WithOrigins("*")
-        .AllowAnyMethod()
-        .AllowAnyHeader()
-);
+app.UseCors(corsPolicyName);
 //}
 
 
