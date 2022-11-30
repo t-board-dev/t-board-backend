@@ -115,7 +115,8 @@ builder.Services.AddCors(o => o.AddPolicy(corsPolicyName,
                           builder.WithOrigins(
                               "http://localhost:3000")
                           .AllowAnyMethod()
-                          .AllowAnyHeader();
+                          .AllowAnyHeader()
+                          .AllowCredentials();
                       }));
 
 builder.Services.AddTBoardServices();
