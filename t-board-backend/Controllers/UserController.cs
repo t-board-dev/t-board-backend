@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -58,8 +59,9 @@ namespace t_board_backend.Controllers
             if (result.Succeeded)
             {
                 var claims = await _userService.GetUserClaims(user);
-
                 var token = _jwtService.GenerateToken(claims);
+
+                HttpContext.Response.Cookies.Append("access_token", token, new CookieOptions { HttpOnly = true });
 
                 return Ok(token);
             }
