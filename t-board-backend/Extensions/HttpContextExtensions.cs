@@ -11,17 +11,19 @@ namespace t_board_backend.Extensions
 {
     public static class HttpContextExtensions
     {
-        private static async Task<string> GetToken(this HttpContext context)
+        public static async Task<bool> IsAuth(this HttpContext context)
         {
             var token = await context.GetTokenAsync("access_token");
             if (string.IsNullOrEmpty(token))
-                throw new (nameof(token));
-            return token;
+                return false;
+
+            var _jwtService = (JwtService)context.RequestServices.GetService(typeof(IJwtService));
+            return _jwtService.IsTokenValid(token);
         }
 
         private static async Task<Claim> GetClaimByType(this HttpContext context, string type)
         {
-            var token = await context.GetToken();
+            var token = await context.GetTokenAsync("access_token");
 
             var _jwtService = (JwtService)context.RequestServices.GetService(typeof(IJwtService));
 
@@ -34,7 +36,7 @@ namespace t_board_backend.Extensions
             var idClaim = await context.GetClaimByType("id");
 
             if (idClaim == null)
-                throw new (nameof(idClaim));
+                throw new(nameof(idClaim));
 
             return idClaim.Value;
         }
@@ -44,7 +46,7 @@ namespace t_board_backend.Extensions
             var companyClaim = await context.GetClaimByType("company");
 
             if (companyClaim == null)
-                throw new (nameof(companyClaim));
+                throw new(nameof(companyClaim));
 
             var companyId = int.Parse(companyClaim.Value);
 
@@ -57,7 +59,7 @@ namespace t_board_backend.Extensions
                 throw new ArgumentNullException(nameof(context));
 
             if (context.User == null)
-                throw new (nameof(context.User));
+                throw new(nameof(context.User));
 
             return context.User.IsInRole("Admin");
         }
