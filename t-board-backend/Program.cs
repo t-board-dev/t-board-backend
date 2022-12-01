@@ -8,6 +8,7 @@ using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using t_board.Entity;
 using t_board.Services;
 
@@ -74,6 +75,15 @@ builder.Services.AddAuthentication(auth =>
 
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
     };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            context.Token = context.Request.Cookies["X-Access-Token"];
+            return Task.CompletedTask;
+        }
+    };
 });
 
 builder.Services.AddControllers();
@@ -108,16 +118,21 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+//if (app.Environment.IsDevelopment())
+//{
 var corsPolicyName = "t-board-dev-cors-policy";
-builder.Services.AddCors(o => o.AddPolicy(corsPolicyName,
-                      builder =>
-                      {
-                          builder.WithOrigins(
-                              "http://localhost:3000")
-                          .AllowAnyMethod()
-                          .AllowAnyHeader()
-                          .AllowCredentials();
-                      }));
+builder.Services.AddCors(options =>
+    options.AddPolicy(corsPolicyName,
+        builder =>
+        {
+            builder.WithOrigins("http://localhost:3000")
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials();
+        }
+    )
+);
+//}
 
 builder.Services.AddTBoardServices();
 

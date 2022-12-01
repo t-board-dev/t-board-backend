@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Data;
 using System.Linq;
@@ -19,6 +20,7 @@ namespace t_board_backend.Controllers
         private readonly IInviteService _inviteService;
         private readonly IJwtService _jwtService;
         private readonly IUserService _userService;
+        private readonly IConfiguration Configuration;
 
         private readonly UserManager<TBoardUser> _userManager;
         private readonly SignInManager<TBoardUser> _signInManager;
@@ -29,6 +31,7 @@ namespace t_board_backend.Controllers
             IInviteService inviteService,
             IJwtService jwtService,
             IUserService userService,
+            IConfiguration configuration,
             UserManager<TBoardUser> userManager,
             SignInManager<TBoardUser> signInManager,
             TBoardDbContext dbContext)
@@ -36,6 +39,7 @@ namespace t_board_backend.Controllers
             _inviteService = inviteService;
             _jwtService = jwtService;
             _userService = userService;
+            Configuration = configuration;
 
             _userManager = userManager;
             _signInManager = signInManager;
@@ -44,7 +48,6 @@ namespace t_board_backend.Controllers
         }
 
         [HttpPost("signIn")]
-        [ProducesResponseType(typeof(string), 200)]
         public async Task<IActionResult> SignIn([FromBody] SignInRequest signInRequest)
         {
             if (ModelState.IsValid is false) return BadRequest(signInRequest);
@@ -61,9 +64,19 @@ namespace t_board_backend.Controllers
                 var claims = await _userService.GetUserClaims(user);
                 var token = _jwtService.GenerateToken(claims);
 
-                HttpContext.Response.Cookies.Append("access_token", token, new CookieOptions { HttpOnly = true });
+                var expireMinute = Convert.ToInt32(Configuration["Jwt:ExpireMinute"]);
+                Response.Cookies.Append(
+                    "X-Access-Token",
+                    token,
+                    new CookieOptions()
+                    {
+                        HttpOnly = true,
+                        SameSite = SameSiteMode.Strict,
+                        Expires = DateTime.Now.AddMinutes(expireMinute),
+                        Secure = true
+                    });
 
-                return Ok(token);
+                return Ok();
             }
 
             if (result.IsLockedOut) return Forbid("Account is locked!");
@@ -178,6 +191,7 @@ namespace t_board_backend.Controllers
         public async Task<IActionResult> SignOut()
         {
             await _signInManager.SignOutAsync();
+            Response.Cookies.Delete("X-Access-Token");
             return Ok();
         }
     }
