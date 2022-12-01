@@ -10,7 +10,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using t_board.Entity;
 using t_board.Services.Contracts;
+using t_board_backend.Extensions;
 using t_board_backend.Models.User;
+using t_board_backend.Models.User.Dto;
 
 namespace t_board_backend.Controllers
 {
@@ -48,6 +50,7 @@ namespace t_board_backend.Controllers
         }
 
         [HttpPost("signIn")]
+        [ProducesResponseType(typeof(UserDto), 200)]
         public async Task<IActionResult> SignIn([FromBody] SignInRequest signInRequest)
         {
             if (ModelState.IsValid is false) return BadRequest(signInRequest);
@@ -76,12 +79,51 @@ namespace t_board_backend.Controllers
                         Secure = true
                     });
 
-                return Ok();
+                var userRoles = await _userManager.GetRolesAsync(user);
+                var companyUser = await _dbContext.CompanyUsers.FirstOrDefaultAsync(cu => cu.UserId == user.Id);
+
+                var userInfo = new UserDto()
+                {
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Email = user.Email,
+                    Title = user.Title,
+                    PhoneNumber = user.PhoneNumber,
+                    Roles = userRoles.ToArray(),
+                    CompanyId = companyUser?.CompanyId
+                };
+
+                return Ok(userInfo);
             }
 
             if (result.IsLockedOut) return Forbid("Account is locked!");
 
             return BadRequest("Check credentials!");
+        }
+
+        [HttpGet("isAuth")]
+        [ProducesResponseType(typeof(UserDto), 200)]
+        public async Task<IActionResult> IsAuth()
+        {
+            var isAuth = await HttpContext.IsAuth();
+            if (isAuth is false)
+                return Unauthorized();
+
+            var userId = await HttpContext.GetCurrentUserId();
+            var user = await _dbContext.BoardUsers.FirstOrDefaultAsync(u => u.Id == userId);
+            var userRoles = await _userManager.GetRolesAsync(user);
+            var companyUser = await _dbContext.CompanyUsers.FirstOrDefaultAsync(cu => cu.UserId == user.Id);
+
+            return Ok(new UserDto()
+            {
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                Title = user.Title,
+                PhoneNumber = user.PhoneNumber,
+                Roles = userRoles.ToArray(),
+                CompanyId = companyUser?.CompanyId
+            });
         }
 
         [Authorize(Roles = "Admin")]
