@@ -8,6 +8,7 @@ using System;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using t_board.Entity;
 using t_board.Services.Contracts;
 using t_board_backend.Extensions;
@@ -19,6 +20,7 @@ namespace t_board_backend.Controllers
     [Route("user/")]
     public class UserController : Controller
     {
+        private readonly IMailService _mailService;
         private readonly IInviteService _inviteService;
         private readonly IJwtService _jwtService;
         private readonly IUserService _userService;
@@ -30,6 +32,7 @@ namespace t_board_backend.Controllers
         private readonly TBoardDbContext _dbContext;
 
         public UserController(
+            IMailService mailService,
             IInviteService inviteService,
             IJwtService jwtService,
             IUserService userService,
@@ -38,6 +41,7 @@ namespace t_board_backend.Controllers
             SignInManager<TBoardUser> signInManager,
             TBoardDbContext dbContext)
         {
+            _mailService = mailService;
             _inviteService = inviteService;
             _jwtService = jwtService;
             _userService = userService;
@@ -226,6 +230,60 @@ namespace t_board_backend.Controllers
             invitation.ConfirmDate = DateTime.Now;
 
             await _dbContext.SaveChangesAsync();
+
+            return Ok();
+        }
+
+        [Authorize]
+        [HttpPost("changePassword")]
+        public async Task<IActionResult> ChangePassword([FromBody] SetPasswordRequest setPasswordRequest)
+        {
+            var userId = await HttpContext.GetCurrentUserId();
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return Unauthorized();
+
+            if (string.Equals(setPasswordRequest.Password, setPasswordRequest.ConfirmPassword) is false) return BadRequest("Passwords does not match!");
+
+            var result = await _userManager.ChangePasswordAsync(user, setPasswordRequest.Password, setPasswordRequest.ConfirmPassword);
+            if (result.Succeeded is false) return Problem("Password could not changed!");
+
+            return Ok();
+        }
+
+        [HttpPost("sendPasswordResetMail")]
+        public async Task<IActionResult> SendPasswordResetMail([FromQuery(Name = "e")] string email)
+        {
+            if (string.IsNullOrEmpty(email)) return BadRequest();
+
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null) return Ok();
+
+            var passwordResetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            await _mailService.SendMail(new t_board.Services.Models.MailModel()
+            {
+                To = email,
+                Subject = "Board Reset Password",
+                Body = "https://board.com.tr/user/resetPassword?t=" + HttpUtility.UrlEncode(passwordResetToken) + "&e=" + email
+            }, false);
+
+            return Ok();
+        }
+
+        [HttpPost("resetPassword")]
+        public async Task<IActionResult> ResetPassword([FromQuery(Name = "t")] string passwordResetToken, [FromQuery(Name = "e")] string email, [FromBody] SetPasswordRequest setPasswordRequest)
+        {
+            if (string.IsNullOrEmpty(passwordResetToken)) return BadRequest();
+            if (string.IsNullOrEmpty(email)) return BadRequest();
+
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null) BadRequest();
+
+            if (string.Equals(setPasswordRequest.Password, setPasswordRequest.ConfirmPassword) is false) return BadRequest("Passwords does not match!");
+
+            var result = await _userManager.ResetPasswordAsync(user, HttpUtility.UrlDecode(passwordResetToken), setPasswordRequest.Password);
+            if (result.Succeeded is false) return Problem("Password could not reset!");
 
             return Ok();
         }
