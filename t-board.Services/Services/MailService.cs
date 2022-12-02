@@ -30,8 +30,8 @@ namespace t_board.Services.Services
             var to = new EmailAddress(mailModel.To);
 
             var email = isHtml ?
-                MailHelper.CreateSingleEmail(from, to, mailModel.Subject, mailModel.Subject, string.Empty) :
-                MailHelper.CreateSingleEmail(from, to, mailModel.Subject, string.Empty, mailModel.Subject);
+                MailHelper.CreateSingleEmail(from, to, mailModel.Subject, mailModel.Body, string.Empty) :
+                MailHelper.CreateSingleEmail(from, to, mailModel.Subject, string.Empty, mailModel.Body);
 
             var response = await client.SendEmailAsync(email);
 
