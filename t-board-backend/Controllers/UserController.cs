@@ -74,7 +74,7 @@ namespace t_board_backend.Controllers
                     new CookieOptions()
                     {
                         HttpOnly = true,
-                        SameSite = SameSiteMode.Strict,
+                        SameSite = SameSiteMode.Lax,
                         Expires = DateTime.Now.AddMinutes(expireMinute),
                         Secure = true
                     });
