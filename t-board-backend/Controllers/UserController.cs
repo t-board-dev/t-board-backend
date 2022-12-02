@@ -181,10 +181,11 @@ namespace t_board_backend.Controllers
             return Ok();
         }
 
-        [HttpPost("setPassword/{inviteCode}")]
-        public async Task<IActionResult> SetPassword(string inviteCode, [FromBody] SetPasswordRequest setPasswordRequest)
+        [HttpPost("setPassword")]
+        public async Task<IActionResult> SetPassword([FromQuery(Name = "c")] string inviteCode, [FromBody] SetPasswordRequest setPasswordRequest)
         {
             if (ModelState.IsValid is false) return BadRequest(setPasswordRequest);
+            if (string.IsNullOrEmpty(inviteCode)) return BadRequest();
 
             if (string.Equals(setPasswordRequest.Password, setPasswordRequest.ConfirmPassword) is false) return BadRequest("Passwords does not match!");
 
