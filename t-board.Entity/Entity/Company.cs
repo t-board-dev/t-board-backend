@@ -17,7 +17,7 @@ namespace t_board.Entity
 
         public int Type { get; set; }
 
-        public string Url { get; set; }
+        public string LogoURL { get; set; }
 
         public virtual ICollection<Brand> Brands { get; set; }
     }
