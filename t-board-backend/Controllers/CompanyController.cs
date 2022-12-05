@@ -42,7 +42,7 @@ namespace t_board_backend.Controllers
                 Id = c.Id,
                 Name = c.Name,
                 Type = c.Type,
-                Url = c.LogoURL
+                LogoURL = c.LogoURL
             })
                 .ToArrayAsync();
 
@@ -60,7 +60,7 @@ namespace t_board_backend.Controllers
                     Id = c.Id,
                     Name = c.Name,
                     Type = c.Type,
-                    Url = c.LogoURL
+                    LogoURL = c.LogoURL
                 })
                 .FirstOrDefaultAsync();
 
@@ -148,6 +148,24 @@ namespace t_board_backend.Controllers
 
             var invitationSent = await _inviteService.SendInvitation(owner.Email);
             if (invitationSent.Succeeded is false) return UnprocessableEntity(invitationSent.Message);
+
+            return Ok();
+        }
+
+        [HttpPost("updateCompany")]
+        public async Task<IActionResult> UpdateCompany([FromBody] CompanyDto companyDto)
+        {
+            var company = await _dbContext.Companies.FirstOrDefaultAsync(c => c.Id == companyDto.Id);
+            if (company == null) return NotFound(companyDto);
+
+            company.Name = companyDto.Name;
+            company.Type = companyDto.Type;
+            company.LogoURL = companyDto.LogoURL;
+
+            _dbContext.Entry(company).State = EntityState.Modified;
+
+            var companyUpdated = await _dbContext.SaveChangesAsync();
+            if (companyUpdated is 0) return Problem("Company could not updated!");
 
             return Ok();
         }
