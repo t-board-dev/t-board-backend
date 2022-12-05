@@ -92,7 +92,7 @@ namespace t_board_backend.Controllers
         }
 
         [HttpPost("createBoard")]
-        public async Task<IActionResult> CreateBoard(BoardDto board)
+        public async Task<IActionResult> CreateBoard([FromBody]BoardDto board)
         {
             var currentUser = await HttpContext.GetCurrentUserId();
 
