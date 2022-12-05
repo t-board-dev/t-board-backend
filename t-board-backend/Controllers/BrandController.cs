@@ -212,5 +212,24 @@ namespace t_board_backend.Controllers
 
             return Ok();
         }
+
+        [HttpPost("updateBrand")]
+        public async Task<IActionResult> UpdateBrand([FromBody] BrandDto brandDto)
+        {
+            var brand = await _dbContext.Brands.FirstOrDefaultAsync(b => b.Id == brandDto.Id);
+            if (brand == null) return NotFound(brandDto);
+
+            brand.Name = brandDto.Name;
+            brand.LogoURL = brandDto.LogoURL;
+            brand.Keywords = brandDto.Keywords;
+            brand.Design = brandDto.Design;
+
+            _dbContext.Entry(brand).State = EntityState.Modified;
+            
+            var brandUpdated = await _dbContext.SaveChangesAsync();
+            if (brandUpdated is 0) return Problem("Brand could not updated!");
+
+            return Ok();
+        }
     }
 }
