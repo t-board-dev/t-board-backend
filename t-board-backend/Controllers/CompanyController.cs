@@ -42,7 +42,7 @@ namespace t_board_backend.Controllers
                 Id = c.Id,
                 Name = c.Name,
                 Type = c.Type,
-                Url = c.Url
+                Url = c.LogoURL
             })
                 .ToArrayAsync();
 
@@ -60,7 +60,7 @@ namespace t_board_backend.Controllers
                     Id = c.Id,
                     Name = c.Name,
                     Type = c.Type,
-                    Url = c.Url
+                    Url = c.LogoURL
                 })
                 .FirstOrDefaultAsync();
 
@@ -116,7 +116,7 @@ namespace t_board_backend.Controllers
             {
                 Name = createCompanyRequest.CompanyName,
                 Type = createCompanyRequest.CompanyType,
-                Url = createCompanyRequest.CompanyUrl
+                LogoURL = createCompanyRequest.CompanyUrl
             };
 
             var owner = new TBoardUser

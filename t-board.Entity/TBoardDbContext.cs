@@ -87,7 +87,7 @@ public class TBoardDbContext : IdentityDbContext
         {
             e.Property(c => c.Name).IsRequired().HasMaxLength(256);
             e.Property(c => c.Type).IsRequired();
-            e.Property(c => c.Url).HasMaxLength(512);
+            e.Property(c => c.LogoURL).HasMaxLength(512);
         });
 
         builder.Entity<CompanyType>(e =>
