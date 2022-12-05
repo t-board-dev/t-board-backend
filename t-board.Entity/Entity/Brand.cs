@@ -17,6 +17,8 @@ namespace t_board.Entity
 
         public string Name { get; set; }
 
+        public string LogoURL { get; set; }
+
         public string Keywords { get; set; }
 
         public string Design { get; set; }

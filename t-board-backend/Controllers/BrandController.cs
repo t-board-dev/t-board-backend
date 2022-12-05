@@ -54,6 +54,7 @@ namespace t_board_backend.Controllers
                 {
                     Id = b.Id,
                     Name = b.Name,
+                    LogoURL = b.LogoURL,
                     CompanyId = b.CompanyId,
                     Keywords = b.Keywords,
                     Design = b.Design
@@ -77,6 +78,7 @@ namespace t_board_backend.Controllers
                 {
                     Id = b.Id,
                     Name = b.Name,
+                    LogoURL = b.LogoURL,
                     CompanyId = b.CompanyId,
                     Keywords = b.Keywords,
                     Design = b.Design
@@ -128,6 +130,7 @@ namespace t_board_backend.Controllers
                 {
                     Id = b.Id,
                     Name = b.Name,
+                    LogoURL = b.LogoURL,
                     CompanyId = b.CompanyId,
                     Keywords = b.Keywords,
                     Design = b.Design
