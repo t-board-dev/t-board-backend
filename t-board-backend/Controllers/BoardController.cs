@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
@@ -92,7 +93,7 @@ namespace t_board_backend.Controllers
         }
 
         [HttpPost("createBoard")]
-        public async Task<IActionResult> CreateBoard([FromBody]BoardDto board)
+        public async Task<IActionResult> CreateBoard([FromBody] BoardDto board)
         {
             var currentUser = await HttpContext.GetCurrentUserId();
 
@@ -114,8 +115,12 @@ namespace t_board_backend.Controllers
             return Ok();
         }
 
-        [HttpPost("createBoardItem")]
-        public async Task<IActionResult> CreateBoardItem(BoardItemDto boardItem)
+        [HttpPost("updateBoardItems")]
+        public async Task<IActionResult> UpdateBoardItems([FromBody] BoardItemDto[] boardItems)
+        {
+            try
+            {
+                foreach (var boardItem in boardItems)
         {
             var board = await _dbContext.Boards.Where(b => b.Id == boardItem.BoardId).FirstOrDefaultAsync();
             if (board == null) BadRequest("Board could not found!");
@@ -139,9 +144,17 @@ namespace t_board_backend.Controllers
             };
 
             _dbContext.Add(newBoardItem);
+                }
+
             await _dbContext.SaveChangesAsync();
 
             return Ok();
+        }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return BadRequest();
+            }
         }
     }
 }
