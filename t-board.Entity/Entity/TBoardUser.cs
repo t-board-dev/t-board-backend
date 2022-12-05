@@ -9,5 +9,7 @@ public class TBoardUser : IdentityUser
     public string LastName { get; set; }
 
     public string Title { get; set; }
+
+    public string AvatarURL { get; set; }
 }
 
