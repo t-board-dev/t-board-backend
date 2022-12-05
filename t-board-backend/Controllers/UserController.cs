@@ -251,6 +251,23 @@ namespace t_board_backend.Controllers
             return Ok();
         }
 
+        [Authorize]
+        [HttpPost("changeAvatar")]
+        public async Task<IActionResult> ChangeAvatar(string avatar)
+        {
+            var userId = await HttpContext.GetCurrentUserId();
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return Unauthorized();
+
+            user.AvatarURL = avatar;
+
+            var result = await _userManager.UpdateAsync(user);
+            if (result.Succeeded is false) return Problem("Avatar could not changed!");
+
+            return Ok();
+        }
+
         [HttpPost("sendPasswordResetMail")]
         public async Task<IActionResult> SendPasswordResetMail([FromQuery(Name = "e")] string email)
         {
