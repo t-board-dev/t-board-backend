@@ -115,17 +115,41 @@ namespace t_board_backend.Controllers
             return Ok();
         }
 
+        [HttpPost("updateBoard")]
+        public async Task<IActionResult> UpdateBoard([FromBody] BoardDto boardDto)
+        {
+            var currentUser = await HttpContext.GetCurrentUserId();
+
+            var board = await _dbContext.Boards.Where(b => b.Id == boardDto.Id).FirstOrDefaultAsync();
+            if (board == null) return NotFound(boardDto);
+
+            var brandUser = await _dbContext.BrandUsers.Where(u => u.UserId == currentUser && u.BrandId == board.BrandId).FirstOrDefaultAsync();
+            if (brandUser == null) return Unauthorized();
+
+            board.Name = boardDto.Name;
+            board.Description = boardDto.Description;
+            board.Status = boardDto.Status;
+            board.Design = boardDto.Design;
+
+            _dbContext.Entry(board).State = EntityState.Modified;
+
+            var brandUpdated = await _dbContext.SaveChangesAsync();
+            if (brandUpdated is 0) return Problem("Board could not updated!");
+
+            return Ok();
+        }
+
         [HttpPost("updateBoardItems")]
         public async Task<IActionResult> UpdateBoardItems([FromBody] BoardItemDto[] boardItems)
         {
             try
             {
+                var currentUser = await HttpContext.GetCurrentUserId();
+
                 foreach (var boardItem in boardItems)
         {
             var board = await _dbContext.Boards.Where(b => b.Id == boardItem.BoardId).FirstOrDefaultAsync();
             if (board == null) BadRequest("Board could not found!");
-
-            var currentUser = await HttpContext.GetCurrentUserId();
 
             var brandUser = await _dbContext.BrandUsers.Where(u => u.UserId == currentUser && u.BrandId == board.BrandId).FirstOrDefaultAsync();
             if (brandUser == null) return Unauthorized();
