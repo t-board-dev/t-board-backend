@@ -155,7 +155,7 @@ namespace t_board_backend.Controllers
         [HttpPost("updateCompany")]
         public async Task<IActionResult> UpdateCompany([FromBody] CompanyDto companyDto)
         {
-            var company = await _dbContext.Companies.FirstOrDefaultAsync(c => c.Id == companyDto.Id);
+            var company = await _dbContext.Companies.Where(c => c.Id == companyDto.Id).FirstOrDefaultAsync();
             if (company == null) return NotFound(companyDto);
 
             company.Name = companyDto.Name;
