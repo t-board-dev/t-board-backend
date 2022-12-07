@@ -156,6 +156,36 @@ namespace t_board_backend.Controllers
             return Ok();
         }
 
+        [Authorize(Roles = "Admin, CompanyOwner")]
+        [HttpPost("disableUser")]
+        public async Task<IActionResult> DisableUser([FromQuery] string email)
+        {
+            return await SetUserLockout(email, true);
+        }
+
+        [Authorize(Roles = "Admin, CompanyOwner")]
+        [HttpPost("enableUser")]
+        public async Task<IActionResult> EnableUser([FromQuery] string email)
+        {
+            return await SetUserLockout(email, false);
+        }
+
+        private async Task<IActionResult> SetUserLockout(string userEmail, bool locked)
+        {
+            var user = await _userManager.FindByEmailAsync(userEmail);
+            if (user == null) NotFound();
+            var userRoles = await _userManager.GetRolesAsync(user);
+
+            var userIsAdminOrCompanyOwner = userRoles.Contains("Admin") || userRoles.Contains("CompanyOwner");
+
+            if (HttpContext.IsCurrentUserAdmin() is false && userIsAdminOrCompanyOwner) return Forbid();
+
+            var disabled = await _userManager.SetLockoutEnabledAsync(user, locked);
+            if (disabled.Succeeded is false) return UnprocessableEntity(disabled.Errors);
+
+            return Ok();
+        }
+
         [Authorize(Roles = "Admin")]
         [HttpPost("sendInvitation")]
         public async Task<IActionResult> SendInvitation([FromBody] SendInvitationRequest invitationRequest)
