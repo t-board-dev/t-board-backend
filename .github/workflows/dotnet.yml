@@ -45,8 +45,8 @@ jobs:
         server: ${{ secrets.FTP_HOST }}
         username: ${{ secrets.FTP_USER }}
         password: ${{ secrets.FTP_PASSWORD }}
-        local-Dir: "/home/runner/work/t-board-backend/t-board-backend/publish/"
-        remote-Dir: "/api/"
+        local-dir: "/home/runner/work/t-board-backend/t-board-backend/publish/"
+        remote-dir: "/api/"
         
     - name: Rename app_offline.htm back to _app_offline.htm to start the site
       shell: python
