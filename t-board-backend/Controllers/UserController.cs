@@ -100,7 +100,7 @@ namespace t_board_backend.Controllers
                 return Ok(userInfo);
             }
 
-            if (result.IsLockedOut) return Forbid("Account is locked!");
+            if (result.IsLockedOut) return Forbid("User locked!");
 
             return BadRequest("Check credentials!");
         }
@@ -157,15 +157,15 @@ namespace t_board_backend.Controllers
         }
 
         [Authorize(Roles = "Admin, CompanyOwner")]
-        [HttpPost("disableUser")]
-        public async Task<IActionResult> DisableUser([FromQuery] string email)
+        [HttpPost("lockUser")]
+        public async Task<IActionResult> LockUser([FromQuery] string email)
         {
             return await SetUserLockout(email, true);
         }
 
         [Authorize(Roles = "Admin, CompanyOwner")]
-        [HttpPost("enableUser")]
-        public async Task<IActionResult> EnableUser([FromQuery] string email)
+        [HttpPost("unlockUser")]
+        public async Task<IActionResult> UnlockUser([FromQuery] string email)
         {
             return await SetUserLockout(email, false);
         }
@@ -173,7 +173,8 @@ namespace t_board_backend.Controllers
         private async Task<IActionResult> SetUserLockout(string userEmail, bool locked)
         {
             var user = await _userManager.FindByEmailAsync(userEmail);
-            if (user == null) NotFound();
+            if (user == null) return NotFound();
+
             var userRoles = await _userManager.GetRolesAsync(user);
 
             var userIsAdminOrCompanyOwner = userRoles.Contains("Admin") || userRoles.Contains("CompanyOwner");
@@ -191,6 +192,11 @@ namespace t_board_backend.Controllers
         public async Task<IActionResult> SendInvitation([FromBody] SendInvitationRequest invitationRequest)
         {
             if (ModelState.IsValid is false) return BadRequest(invitationRequest);
+
+            var user = await _userManager.FindByEmailAsync(invitationRequest.Email);
+            if (user == null) return NotFound();
+            if (user.LockoutEnabled) return Conflict("User locked!");
+            if (user.EmailConfirmed) return Conflict("User already invited!");
 
             var invitationSent = await _inviteService.SendInvitation(invitationRequest.Email);
 
