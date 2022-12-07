@@ -98,7 +98,7 @@ namespace t_board_backend.Controllers
             var currentUser = await HttpContext.GetCurrentUserId();
 
             var brandUser = await _dbContext.BrandUsers.Where(u => u.UserId == currentUser && u.BrandId == board.BrandId).FirstOrDefaultAsync();
-            if (brandUser == null) return Unauthorized();
+            if (brandUser == null) return Forbid();
 
             var newBoard = new Board()
             {
@@ -124,7 +124,7 @@ namespace t_board_backend.Controllers
             if (board == null) return NotFound(boardDto);
 
             var brandUser = await _dbContext.BrandUsers.Where(u => u.UserId == currentUser && u.BrandId == board.BrandId).FirstOrDefaultAsync();
-            if (brandUser == null) return Unauthorized();
+            if (brandUser == null) return Forbid();
 
             board.Name = boardDto.Name;
             board.Description = boardDto.Description;
@@ -147,33 +147,33 @@ namespace t_board_backend.Controllers
                 var currentUser = await HttpContext.GetCurrentUserId();
 
                 foreach (var boardItem in boardItems)
-        {
-            var board = await _dbContext.Boards.Where(b => b.Id == boardItem.BoardId).FirstOrDefaultAsync();
-            if (board == null) BadRequest("Board could not found!");
+                {
+                    var board = await _dbContext.Boards.Where(b => b.Id == boardItem.BoardId).FirstOrDefaultAsync();
+                    if (board == null) BadRequest("Board could not found!");
 
-            var brandUser = await _dbContext.BrandUsers.Where(u => u.UserId == currentUser && u.BrandId == board.BrandId).FirstOrDefaultAsync();
-            if (brandUser == null) return Unauthorized();
+                    var brandUser = await _dbContext.BrandUsers.Where(u => u.UserId == currentUser && u.BrandId == board.BrandId).FirstOrDefaultAsync();
+                    if (brandUser == null) return Forbid();
 
-            var type = await _dbContext.BoardItemTypes.Where(t => t.Id == boardItem.Type).FirstOrDefaultAsync();
-            if (type == null) BadRequest($"Board item type could not found!");
+                    var type = await _dbContext.BoardItemTypes.Where(t => t.Id == boardItem.Type).FirstOrDefaultAsync();
+                    if (type == null) BadRequest($"Board item type could not found!");
 
-            var newBoardItem = new BoardItem()
-            {
-                BoardId = boardItem.BoardId,
-                Title = boardItem.Title,
-                Type = boardItem.Type,
-                GridData = boardItem.GridData,
-                CustomGridData = boardItem.CustomGridData,
-                Data = boardItem.Data
-            };
+                    var newBoardItem = new BoardItem()
+                    {
+                        BoardId = boardItem.BoardId,
+                        Title = boardItem.Title,
+                        Type = boardItem.Type,
+                        GridData = boardItem.GridData,
+                        CustomGridData = boardItem.CustomGridData,
+                        Data = boardItem.Data
+                    };
 
-            _dbContext.Add(newBoardItem);
+                    _dbContext.Add(newBoardItem);
                 }
 
-            await _dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
 
-            return Ok();
-        }
+                return Ok();
+            }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);

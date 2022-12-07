@@ -271,7 +271,7 @@ namespace t_board_backend.Controllers
             var userId = await HttpContext.GetCurrentUserId();
 
             var user = await _userManager.FindByIdAsync(userId);
-            if (user == null) return Unauthorized();
+            if (user == null) return Forbid();
 
             if (string.Equals(setPasswordRequest.Password, setPasswordRequest.ConfirmPassword) is false) return BadRequest("Passwords does not match!");
 
@@ -288,7 +288,7 @@ namespace t_board_backend.Controllers
             var userId = await HttpContext.GetCurrentUserId();
 
             var user = await _userManager.FindByIdAsync(userId);
-            if (user == null) return Unauthorized();
+            if (user == null) return Forbid();
 
             user.AvatarURL = avatar;
 
