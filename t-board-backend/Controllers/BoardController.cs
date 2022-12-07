@@ -23,9 +23,23 @@ namespace t_board_backend.Controllers
             _dbContext = dbContext;
         }
 
+        [HttpGet("getBoard")]
+        public async Task<IActionResult> GetBoard([FromQuery] int boardId)
+        {
+            var currentUser = await HttpContext.GetCurrentUserId();
+
+            var board = await _dbContext.Boards.Where(b => b.Id == boardId).FirstOrDefaultAsync();
+            if (board == null) return NotFound();
+
+            var brandUser = await _dbContext.BrandUsers.Where(u => u.UserId == currentUser && u.BrandId == board.BrandId).FirstOrDefaultAsync();
+            if (brandUser == null) return Forbid();
+
+            return Ok(board);
+        }
+
         [HttpGet("getBrandBoards")]
         [ProducesResponseType(typeof(BoardDto[]), 200)]
-        public async Task<IActionResult> GetBrandBoards(int brandId)
+        public async Task<IActionResult> GetBrandBoards([FromQuery] int brandId)
         {
             var currentUser = await HttpContext.GetCurrentUserId();
 
@@ -50,7 +64,7 @@ namespace t_board_backend.Controllers
 
         [HttpGet("getBoardItems")]
         [ProducesResponseType(typeof(BoardItemDto[]), 200)]
-        public async Task<IActionResult> GetBoardItems(int boardId)
+        public async Task<IActionResult> GetBoardItems([FromQuery] int boardId)
         {
             var board = await _dbContext.Boards.Where(b => b.Id == boardId).Include(b => b.BoardItems).FirstOrDefaultAsync();
 
@@ -133,8 +147,8 @@ namespace t_board_backend.Controllers
 
             _dbContext.Entry(board).State = EntityState.Modified;
 
-            var brandUpdated = await _dbContext.SaveChangesAsync();
-            if (brandUpdated is 0) return Problem("Board could not updated!");
+            var boardUpdated = await _dbContext.SaveChangesAsync();
+            if (boardUpdated is 0) return Problem("Board could not updated!");
 
             return Ok();
         }
@@ -170,14 +184,15 @@ namespace t_board_backend.Controllers
                     _dbContext.Add(newBoardItem);
                 }
 
-                await _dbContext.SaveChangesAsync();
+                var boardItemsUpdated = await _dbContext.SaveChangesAsync();
+                if (boardItemsUpdated is 0) return Problem("Board items could not updated!");
 
                 return Ok();
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
-                return BadRequest();
+                return Problem();
             }
         }
     }
