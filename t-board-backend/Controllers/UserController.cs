@@ -195,7 +195,6 @@ namespace t_board_backend.Controllers
 
             var user = await _userManager.FindByEmailAsync(invitationRequest.Email);
             if (user == null) return NotFound();
-            if (user.LockoutEnabled) return Conflict("User locked!");
             if (user.EmailConfirmed) return Conflict("User already invited!");
 
             var invitationSent = await _inviteService.SendInvitation(invitationRequest.Email);
