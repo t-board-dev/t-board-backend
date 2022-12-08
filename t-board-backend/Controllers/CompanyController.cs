@@ -99,9 +99,11 @@ namespace t_board_backend.Controllers
                 (cu, u) => new CompanyUserDto()
                 {
                     CompanyId = cu.CompanyId,
-                    UserFirstName = u.FirstName,
-                    UserLastName = u.LastName,
-                    UserEmail = u.Email,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName,
+                    Email = u.Email,
+                    Title = u.Title,
+                    AccountLocked = u.LockoutEnabled
                 })
                 .Where(cu => cu.CompanyId == company.Id)
                 .ToArrayAsync();

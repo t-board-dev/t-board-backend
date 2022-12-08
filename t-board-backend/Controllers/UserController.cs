@@ -100,7 +100,7 @@ namespace t_board_backend.Controllers
                 return Ok(userInfo);
             }
 
-            if (result.IsLockedOut) return Forbid("Account is locked!");
+            if (result.IsLockedOut) return Forbid("User locked!");
 
             return BadRequest("Check credentials!");
         }
@@ -156,11 +156,47 @@ namespace t_board_backend.Controllers
             return Ok();
         }
 
+        [Authorize(Roles = "Admin, CompanyOwner")]
+        [HttpPost("lockUser")]
+        public async Task<IActionResult> LockUser([FromQuery] string email)
+        {
+            return await SetUserLockout(email, true);
+        }
+
+        [Authorize(Roles = "Admin, CompanyOwner")]
+        [HttpPost("unlockUser")]
+        public async Task<IActionResult> UnlockUser([FromQuery] string email)
+        {
+            return await SetUserLockout(email, false);
+        }
+
+        private async Task<IActionResult> SetUserLockout(string userEmail, bool locked)
+        {
+            var user = await _userManager.FindByEmailAsync(userEmail);
+            if (user == null) return NotFound();
+
+            var userRoles = await _userManager.GetRolesAsync(user);
+
+            var userIsAdminOrCompanyOwner = userRoles.Contains("Admin") || userRoles.Contains("CompanyOwner");
+
+            if (HttpContext.IsCurrentUserAdmin() is false && userIsAdminOrCompanyOwner) return Forbid();
+
+            var disabled = await _userManager.SetLockoutEnabledAsync(user, locked);
+            if (disabled.Succeeded is false) return UnprocessableEntity(disabled.Errors);
+
+            return Ok();
+        }
+
         [Authorize(Roles = "Admin")]
         [HttpPost("sendInvitation")]
         public async Task<IActionResult> SendInvitation([FromBody] SendInvitationRequest invitationRequest)
         {
             if (ModelState.IsValid is false) return BadRequest(invitationRequest);
+
+            var user = await _userManager.FindByEmailAsync(invitationRequest.Email);
+            if (user == null) return NotFound();
+            if (user.LockoutEnabled) return Conflict("User locked!");
+            if (user.EmailConfirmed) return Conflict("User already invited!");
 
             var invitationSent = await _inviteService.SendInvitation(invitationRequest.Email);
 
@@ -241,7 +277,7 @@ namespace t_board_backend.Controllers
             var userId = await HttpContext.GetCurrentUserId();
 
             var user = await _userManager.FindByIdAsync(userId);
-            if (user == null) return Unauthorized();
+            if (user == null) return Forbid();
 
             if (string.Equals(setPasswordRequest.Password, setPasswordRequest.ConfirmPassword) is false) return BadRequest("Passwords does not match!");
 
@@ -258,7 +294,7 @@ namespace t_board_backend.Controllers
             var userId = await HttpContext.GetCurrentUserId();
 
             var user = await _userManager.FindByIdAsync(userId);
-            if (user == null) return Unauthorized();
+            if (user == null) return Forbid();
 
             user.AvatarURL = avatar;
 

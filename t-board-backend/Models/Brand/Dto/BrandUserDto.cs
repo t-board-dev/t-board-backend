@@ -5,8 +5,10 @@ namespace t_board_backend.Models.Brand.Dto
     public class BrandUserDto
     {
         public int BrandId { get; set; }
-        public string UserFirstName { get; set; }
-        public string UserLastName { get; set; }
-        public string UserEmail { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
+        public string Title { get; set; }
+        public bool AccountLocked { get; set; }
     }
 }

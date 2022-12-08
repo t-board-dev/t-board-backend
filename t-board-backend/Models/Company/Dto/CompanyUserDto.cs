@@ -3,8 +3,10 @@
     public class CompanyUserDto
     {
         public int CompanyId { get; set; }
-        public string UserFirstName { get; set; }
-        public string UserLastName { get; set; }
-        public string UserEmail { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
+        public string Title { get; set; }
+        public bool AccountLocked { get; set; }
     }
 }
