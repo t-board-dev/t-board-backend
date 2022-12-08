@@ -195,7 +195,6 @@ namespace t_board_backend.Controllers
 
             var user = await _userManager.FindByEmailAsync(invitationRequest.Email);
             if (user == null) return NotFound();
-            if (user.LockoutEnabled) return Conflict("User locked!");
             if (user.EmailConfirmed) return Conflict("User already invited!");
 
             var invitationSent = await _inviteService.SendInvitation(invitationRequest.Email);
@@ -222,18 +221,18 @@ namespace t_board_backend.Controllers
         }
 
         [HttpPost("setPassword")]
-        public async Task<IActionResult> SetPassword([FromQuery(Name = "c")] string inviteCode, [FromBody] SetPasswordRequest setPasswordRequest)
+        public async Task<IActionResult> SetPassword([FromBody] SetPasswordRequest setPasswordRequest)
         {
             if (ModelState.IsValid is false) return BadRequest(setPasswordRequest);
-            if (string.IsNullOrEmpty(inviteCode)) return BadRequest();
+            if (string.IsNullOrEmpty(setPasswordRequest.InviteCode)) return BadRequest();
 
             if (string.Equals(setPasswordRequest.Password, setPasswordRequest.ConfirmPassword) is false) return BadRequest("Passwords does not match!");
 
             var invitation = await _dbContext.UserInvitations
-                .Where(i => i.InviteCode == inviteCode)
+                .Where(i => i.InviteCode == setPasswordRequest.InviteCode)
                 .FirstOrDefaultAsync();
 
-            if (invitation == null) return NotFound(inviteCode);
+            if (invitation == null) return NotFound(setPasswordRequest.InviteCode);
             if (invitation.IsConfirmed) return Conflict("Invitation has already confirmed!");
             if (invitation.ExpireDate < DateTime.Now) return Conflict("Invitation has expired!");
 

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using t_board.Entity;
 using t_board.Services.Contracts;
 using t_board_backend.Extensions;
+using t_board_backend.Models.Board;
 using t_board_backend.Models.Brand;
 using t_board_backend.Models.Brand.Dto;
 
@@ -49,15 +50,26 @@ namespace t_board_backend.Controllers
             }
 
             var brands = await _dbContext.Brands
+                .Include(b => b.Boards)
                 .Where(expression)
-                .Select(b => new BrandDto()
+                .Select(br => new BrandDto()
                 {
-                    Id = b.Id,
-                    Name = b.Name,
-                    LogoURL = b.LogoURL,
-                    CompanyId = b.CompanyId,
-                    Keywords = b.Keywords,
-                    Design = b.Design
+                    Id = br.Id,
+                    Name = br.Name,
+                    LogoURL = br.LogoURL,
+                    CompanyId = br.CompanyId,
+                    Keywords = br.Keywords,
+                    Design = br.Design,
+                    Boards = br.Boards.Select(bo => new BoardDto()
+                    {
+                        Id = bo.Id,
+                        BrandId = bo.BrandId,
+                        Name = bo.Name,
+                        Description = bo.Description,
+                        Status = bo.Status,
+                        Design = bo.Design
+                    })
+                    .ToArray()
                 })
                 .ToArrayAsync();
 
@@ -74,14 +86,24 @@ namespace t_board_backend.Controllers
                 .Where(b =>
                     b.Id == brandId &&
                     b.CompanyId == companyId)
-                .Select(b => new BrandDto()
+                .Select(br => new BrandDto()
                 {
-                    Id = b.Id,
-                    Name = b.Name,
-                    LogoURL = b.LogoURL,
-                    CompanyId = b.CompanyId,
-                    Keywords = b.Keywords,
-                    Design = b.Design
+                    Id = br.Id,
+                    Name = br.Name,
+                    LogoURL = br.LogoURL,
+                    CompanyId = br.CompanyId,
+                    Keywords = br.Keywords,
+                    Design = br.Design,
+                    Boards = br.Boards.Select(bo => new BoardDto()
+                    {
+                        Id = bo.Id,
+                        BrandId = bo.BrandId,
+                        Name = bo.Name,
+                        Description = bo.Description,
+                        Status = bo.Status,
+                        Design = bo.Design
+                    })
+                    .ToArray()
                 })
                 .FirstOrDefaultAsync();
 
@@ -128,14 +150,24 @@ namespace t_board_backend.Controllers
         {
             var brands = await _dbContext.Brands
                 .Where(b => b.CompanyId == companyId)
-                .Select(b => new BrandDto()
+                .Select(br => new BrandDto()
                 {
-                    Id = b.Id,
-                    Name = b.Name,
-                    LogoURL = b.LogoURL,
-                    CompanyId = b.CompanyId,
-                    Keywords = b.Keywords,
-                    Design = b.Design
+                    Id = br.Id,
+                    Name = br.Name,
+                    LogoURL = br.LogoURL,
+                    CompanyId = br.CompanyId,
+                    Keywords = br.Keywords,
+                    Design = br.Design,
+                    Boards = br.Boards.Select(bo => new BoardDto()
+                    {
+                        Id = bo.Id,
+                        BrandId = bo.BrandId,
+                        Name = bo.Name,
+                        Description = bo.Description,
+                        Status = bo.Status,
+                        Design = bo.Design
+                    })
+                    .ToArray()
                 })
                 .ToArrayAsync();
 
@@ -227,7 +259,7 @@ namespace t_board_backend.Controllers
             brand.Design = brandDto.Design;
 
             _dbContext.Entry(brand).State = EntityState.Modified;
-            
+
             var brandUpdated = await _dbContext.SaveChangesAsync();
             if (brandUpdated is 0) return Problem("Brand could not updated!");
 

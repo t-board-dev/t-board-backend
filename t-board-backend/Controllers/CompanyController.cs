@@ -6,6 +6,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using t_board.Entity;
 using t_board.Services.Contracts;
+using t_board_backend.Models.Board;
+using t_board_backend.Models.Brand.Dto;
 using t_board_backend.Models.Company;
 using t_board_backend.Models.Company.Dto;
 
@@ -37,13 +39,36 @@ namespace t_board_backend.Controllers
         [ProducesResponseType(typeof(CompanyDto[]), 200)]
         public async Task<IActionResult> GetCompanies()
         {
-            var companies = await _dbContext.Companies.Select(c => new CompanyDto()
-            {
-                Id = c.Id,
-                Name = c.Name,
-                Type = c.Type,
-                LogoURL = c.LogoURL
-            })
+            var companies = await _dbContext.Companies
+                .Include(c => c.Brands)
+                .ThenInclude(br => br.Boards)
+                .Select(c => new CompanyDto()
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Type = c.Type,
+                    LogoURL = c.LogoURL,
+                    Brands = c.Brands.Select(br => new BrandDto()
+                    {
+                        Id = br.Id,
+                        CompanyId = br.CompanyId,
+                        Name = br.Name,
+                        LogoURL = br.LogoURL,
+                        Keywords = br.Keywords,
+                        Design = br.Design,
+                        Boards = br.Boards.Select(bo => new BoardDto()
+                        {
+                            Id = bo.Id,
+                            BrandId = bo.BrandId,
+                            Name = bo.Name,
+                            Description = bo.Description,
+                            Status = bo.Status,
+                            Design = bo.Design
+                        })
+                        .ToArray()
+                    })
+                    .ToArray()
+                })
                 .ToArrayAsync();
 
             return Ok(companies);
@@ -54,13 +79,35 @@ namespace t_board_backend.Controllers
         public async Task<IActionResult> GetCompany(int companyId)
         {
             var company = await _dbContext.Companies
+                .Include(c => c.Brands)
+                .ThenInclude(br => br.Boards)
                 .Where(c => c.Id == companyId)
                 .Select(c => new CompanyDto()
                 {
                     Id = c.Id,
                     Name = c.Name,
                     Type = c.Type,
-                    LogoURL = c.LogoURL
+                    LogoURL = c.LogoURL,
+                    Brands = c.Brands.Select(br => new BrandDto()
+                    {
+                        Id = br.Id,
+                        CompanyId = br.CompanyId,
+                        Name = br.Name,
+                        LogoURL = br.LogoURL,
+                        Keywords = br.Keywords,
+                        Design = br.Design,
+                        Boards = br.Boards.Select(bo => new BoardDto()
+                        {
+                            Id = bo.Id,
+                            BrandId = bo.BrandId,
+                            Name = bo.Name,
+                            Description = bo.Description,
+                            Status = bo.Status,
+                            Design = bo.Design
+                        })
+                        .ToArray()
+                    })
+                    .ToArray()
                 })
                 .FirstOrDefaultAsync();
 
