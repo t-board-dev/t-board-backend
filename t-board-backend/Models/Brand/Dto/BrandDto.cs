@@ -1,4 +1,6 @@
-﻿namespace t_board_backend.Models.Brand.Dto
+﻿using t_board_backend.Models.Board;
+
+namespace t_board_backend.Models.Brand.Dto
 {
     public class BrandDto
     {
@@ -8,5 +10,6 @@
         public string LogoURL { get; set; }
         public string Keywords { get; set; }
         public string Design { get; set; }
+        public BoardDto[] Boards { get; set; }
     }
 }
