@@ -174,20 +174,22 @@ namespace t_board_backend.Controllers
             return Ok(brands);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("createBrand")]
-        public async Task<IActionResult> CreateBrand([FromBody] CreateBrandRequest createBrandRequest)
+        public async Task<IActionResult> CreateBrand([FromBody] BrandDto brandDto)
         {
             var brand = new Brand
             {
-                CompanyId = await HttpContext.GetCurrentUserCompanyId(),
-                Name = createBrandRequest.Name,
-                Keywords = createBrandRequest.Keywords,
-                Design = createBrandRequest.Design
+                CompanyId = brandDto.CompanyId,
+                Name = brandDto.Name,
+                LogoURL = brandDto.LogoURL,
+                Keywords = brandDto.Keywords,
+                Design = brandDto.Design
             };
 
             await _dbContext.Brands.AddAsync(brand);
             var brandCreated = await _dbContext.SaveChangesAsync();
-            if (brandCreated is 0) return UnprocessableEntity(createBrandRequest);
+            if (brandCreated is 0) return UnprocessableEntity(brandDto);
 
             return Ok();
         }

@@ -74,7 +74,7 @@ namespace t_board_backend.Controllers
             return Ok(companies);
         }
 
-        [HttpPost("getCompany")]
+        [HttpGet("getCompany")]
         [ProducesResponseType(typeof(CompanyDto), 200)]
         public async Task<IActionResult> GetCompany(int companyId)
         {
@@ -116,13 +116,14 @@ namespace t_board_backend.Controllers
             return Ok(company);
         }
 
-        [HttpPost("getCompanyTypes")]
+        [HttpGet("getCompanyTypes")]
         [ProducesResponseType(typeof(CompanyTypeDto[]), 200)]
         public async Task<IActionResult> GetCompanyTypes()
         {
             var companyTypes = await _dbContext.CompanyTypes
                 .Select(t => new CompanyTypeDto()
                 {
+                    Id = t.Id,
                     Name = t.Name,
                     Code = t.Code
                 })
@@ -131,7 +132,49 @@ namespace t_board_backend.Controllers
             return Ok(companyTypes);
         }
 
-        [HttpPost("getCompanyUsers")]
+        [HttpGet("getCompanyOwner")]
+        [ProducesResponseType(typeof(CompanyUserDto[]), 200)]
+        public async Task<IActionResult> GetCompanyOwner(int companyId)
+        {
+            var company = await _dbContext.Companies
+                .Where(c => c.Id == companyId)
+                .FirstOrDefaultAsync();
+
+            if (company == null) return NotFound(companyId);
+
+            var companyOwnerRole = await _dbContext.Roles.Where(r => r.Name == "CompanyOwner").FirstOrDefaultAsync();
+
+            var companyUsers = await _dbContext.CompanyUsers
+                .Join(_dbContext.UserRoles,
+                cu => cu.UserId,
+                ur => ur.UserId,
+                (companyUser, userRole) => new
+                {
+                    companyUser,
+                    userRole
+                })
+                .Join(_dbContext.BoardUsers,
+                combined => combined.companyUser.UserId,
+                boardUser => boardUser.Id,
+                (combined, boardUser) => new { combined, boardUser })
+                .Where(q =>
+                    q.combined.companyUser.CompanyId == company.Id &&
+                    q.combined.userRole.RoleId == companyOwnerRole.Id)
+                .Select(q => new CompanyUserDto()
+                {
+                    CompanyId = q.combined.companyUser.CompanyId,
+                    FirstName = q.boardUser.FirstName,
+                    LastName = q.boardUser.LastName,
+                    Email = q.boardUser.Email,
+                    Title = q.boardUser.Title,
+                    AccountLocked = q.boardUser.LockoutEnabled
+                })
+                .FirstOrDefaultAsync();
+
+            return Ok(companyUsers);
+        }
+
+        [HttpGet("getCompanyUsers")]
         [ProducesResponseType(typeof(CompanyUserDto[]), 200)]
         public async Task<IActionResult> GetCompanyUsers(int companyId)
         {

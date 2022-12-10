@@ -158,14 +158,14 @@ namespace t_board_backend.Controllers
 
         [Authorize(Roles = "Admin, CompanyOwner")]
         [HttpPost("lockUser")]
-        public async Task<IActionResult> LockUser([FromQuery] string email)
+        public async Task<IActionResult> LockUser(string email)
         {
             return await SetUserLockout(email, true);
         }
 
         [Authorize(Roles = "Admin, CompanyOwner")]
         [HttpPost("unlockUser")]
-        public async Task<IActionResult> UnlockUser([FromQuery] string email)
+        public async Task<IActionResult> UnlockUser(string email)
         {
             return await SetUserLockout(email, false);
         }
@@ -304,7 +304,7 @@ namespace t_board_backend.Controllers
         }
 
         [HttpPost("sendPasswordResetMail")]
-        public async Task<IActionResult> SendPasswordResetMail([FromQuery(Name = "e")] string email)
+        public async Task<IActionResult> SendPasswordResetMail(string email)
         {
             if (string.IsNullOrEmpty(email)) return BadRequest();
 
@@ -324,9 +324,9 @@ namespace t_board_backend.Controllers
         }
 
         [HttpPost("resetPassword")]
-        public async Task<IActionResult> ResetPassword([FromQuery(Name = "t")] string passwordResetToken, [FromQuery(Name = "e")] string email, [FromBody] SetPasswordRequest setPasswordRequest)
+        public async Task<IActionResult> ResetPassword(string resetToken, string email, [FromBody] SetPasswordRequest setPasswordRequest)
         {
-            if (string.IsNullOrEmpty(passwordResetToken)) return BadRequest();
+            if (string.IsNullOrEmpty(resetToken)) return BadRequest();
             if (string.IsNullOrEmpty(email)) return BadRequest();
 
             var user = await _userManager.FindByEmailAsync(email);
@@ -334,7 +334,7 @@ namespace t_board_backend.Controllers
 
             if (string.Equals(setPasswordRequest.Password, setPasswordRequest.ConfirmPassword) is false) return BadRequest("Passwords does not match!");
 
-            var result = await _userManager.ResetPasswordAsync(user, HttpUtility.UrlDecode(passwordResetToken), setPasswordRequest.Password);
+            var result = await _userManager.ResetPasswordAsync(user, HttpUtility.UrlDecode(resetToken), setPasswordRequest.Password);
             if (result.Succeeded is false) return Problem("Password could not reset!");
 
             return Ok();
