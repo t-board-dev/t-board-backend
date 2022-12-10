@@ -123,6 +123,7 @@ namespace t_board_backend.Controllers
             var companyTypes = await _dbContext.CompanyTypes
                 .Select(t => new CompanyTypeDto()
                 {
+                    Id = t.Id,
                     Name = t.Name,
                     Code = t.Code
                 })
