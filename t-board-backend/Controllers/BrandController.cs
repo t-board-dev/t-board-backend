@@ -80,12 +80,16 @@ namespace t_board_backend.Controllers
         [ProducesResponseType(typeof(BrandDto), 200)]
         public async Task<IActionResult> GetBrand(int brandId)
         {
-            var companyId = await HttpContext.GetCurrentUserCompanyId();
+            Expression<Func<Brand, bool>> expression = b => b.Id == brandId && b.CompanyId > 0;
+
+            if (HttpContext.IsCurrentUserAdmin() is false)
+            {
+                var companyId = await HttpContext.GetCurrentUserCompanyId();
+                expression = b => b.Id == brandId && b.CompanyId == companyId;
+            }
 
             var brand = await _dbContext.Brands
-                .Where(b =>
-                    b.Id == brandId &&
-                    b.CompanyId == companyId)
+                .Where(expression)
                 .Select(br => new BrandDto()
                 {
                     Id = br.Id,
