@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using t_board.Entity;
 using t_board_backend.Extensions;
 using t_board_backend.Models.Board;
+using t_board_backend.Models.Board.Dto;
 
 namespace t_board_backend.Controllers
 {
@@ -107,20 +108,20 @@ namespace t_board_backend.Controllers
         }
 
         [HttpPost("createBoard")]
-        public async Task<IActionResult> CreateBoard([FromBody] BoardDto board)
+        public async Task<IActionResult> CreateBoard([FromBody] CreateBoardRequest createBoardRequest)
         {
             var currentUser = await HttpContext.GetCurrentUserId();
 
-            var brandUser = await _dbContext.BrandUsers.Where(u => u.UserId == currentUser && u.BrandId == board.BrandId).FirstOrDefaultAsync();
+            var brandUser = await _dbContext.BrandUsers.Where(u => u.UserId == currentUser && u.BrandId == createBoardRequest.BrandId).FirstOrDefaultAsync();
             if (brandUser == null) return Forbid();
 
             var newBoard = new Board()
             {
-                BrandId = board.BrandId,
-                Name = board.Name,
-                Description = board.Description,
-                Status = board.Status,
-                Design = board.Design
+                BrandId = createBoardRequest.BrandId,
+                Name = createBoardRequest.Name,
+                Description = createBoardRequest.Description,
+                Status = createBoardRequest.Status,
+                Design = createBoardRequest.Design
             };
 
             _dbContext.Add(newBoard);
@@ -171,17 +172,32 @@ namespace t_board_backend.Controllers
                     var type = await _dbContext.BoardItemTypes.Where(t => t.Id == boardItem.Type).FirstOrDefaultAsync();
                     if (type == null) BadRequest($"Board item type could not found!");
 
-                    var newBoardItem = new BoardItem()
-                    {
-                        BoardId = boardItem.BoardId,
-                        Title = boardItem.Title,
-                        Type = boardItem.Type,
-                        GridData = boardItem.GridData,
-                        CustomGridData = boardItem.CustomGridData,
-                        Data = boardItem.Data
-                    };
+                    var currentBoardItem = await _dbContext.BoardItems.Where(i => i.Id == boardItem.Id).FirstOrDefaultAsync();
 
-                    _dbContext.Add(newBoardItem);
+                    if (currentBoardItem == null)
+                    {
+                        var newBoardItem = new BoardItem()
+                        {
+                            BoardId = boardItem.BoardId,
+                            Title = boardItem.Title,
+                            Type = boardItem.Type,
+                            GridData = boardItem.GridData,
+                            CustomGridData = boardItem.CustomGridData,
+                            Data = boardItem.Data
+                        };
+
+                        _dbContext.Add(newBoardItem);
+                    }
+                    else
+                    {
+                        currentBoardItem.Title = boardItem.Title;
+                        currentBoardItem.GridData = boardItem.GridData;
+                        currentBoardItem.CustomGridData = boardItem.CustomGridData;
+                        currentBoardItem.Data = boardItem.Data;
+
+                        _dbContext.Entry(currentBoardItem).State = EntityState.Modified;
+                    }
+
                 }
 
                 var boardItemsUpdated = await _dbContext.SaveChangesAsync();
