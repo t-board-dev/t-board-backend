@@ -15,7 +15,7 @@ using t_board_backend.Models.Brand.Dto;
 
 namespace t_board_backend.Controllers
 {
-    [Authorize(Roles = "Admin, CompanyOwner")]
+    [Authorize]
     [Route("brand/")]
     public class BrandController : Controller
     {
@@ -41,17 +41,36 @@ namespace t_board_backend.Controllers
         [ProducesResponseType(typeof(BrandDto[]), 200)]
         public async Task<IActionResult> GetBrands()
         {
+            var isCurrentUserAdmin = HttpContext.IsCurrentUserAdmin();
+
             Expression<Func<Brand, bool>> expression = b => b.CompanyId > 0;
 
-            if (HttpContext.IsCurrentUserAdmin() is false)
+            if (isCurrentUserAdmin is false)
             {
                 var companyId = await HttpContext.GetCurrentUserCompanyId();
                 expression = b => b.CompanyId == companyId;
             }
 
-            var brands = await _dbContext.Brands
+            var brandsQuery = _dbContext.Brands
                 .Include(b => b.Boards)
-                .Where(expression)
+                .AsQueryable()
+                .Where(expression);
+
+            if (isCurrentUserAdmin is false)
+            {
+                var userId = await HttpContext.GetCurrentUserId();
+
+                brandsQuery
+                     .Join(_dbContext.BrandUsers,
+                         brand => brand.Id,
+                         brandUser => brandUser.BrandId,
+                         (brand, brandUser) => new { brand, brandUser })
+                     .Where(q =>
+                         q.brandUser.UserId == userId)
+                     .Select(q => q.brand);
+            }
+
+            var brands = await brandsQuery
                 .Select(br => new BrandDto()
                 {
                     Id = br.Id,
@@ -68,10 +87,8 @@ namespace t_board_backend.Controllers
                         Description = bo.Description,
                         Status = bo.Status,
                         Design = bo.Design
-                    })
-                    .ToArray()
-                })
-                .ToArrayAsync();
+                    }).ToArray()
+                }).ToArrayAsync();
 
             return Ok(brands);
         }
@@ -80,12 +97,36 @@ namespace t_board_backend.Controllers
         [ProducesResponseType(typeof(BrandDto), 200)]
         public async Task<IActionResult> GetBrand(int brandId)
         {
-            var companyId = await HttpContext.GetCurrentUserCompanyId();
+            var isCurrentUserAdmin = HttpContext.IsCurrentUserAdmin();
 
-            var brand = await _dbContext.Brands
-                .Where(b =>
-                    b.Id == brandId &&
-                    b.CompanyId == companyId)
+            Expression<Func<Brand, bool>> expression = b => b.Id == brandId && b.CompanyId > 0;
+
+            if (isCurrentUserAdmin is false)
+            {
+                var companyId = await HttpContext.GetCurrentUserCompanyId();
+                expression = b => b.Id == brandId && b.CompanyId == companyId;
+            }
+
+            var brandQuery = _dbContext.Brands
+                .Include(b => b.Boards)
+                .AsQueryable()
+                .Where(expression);
+
+            if (isCurrentUserAdmin is false)
+            {
+                var userId = await HttpContext.GetCurrentUserId();
+
+                brandQuery
+                    .Join(_dbContext.BrandUsers,
+                        brand => brand.Id,
+                        brandUser => brandUser.BrandId,
+                        (brand, brandUser) => new { brand, brandUser })
+                    .Where(q =>
+                        q.brandUser.UserId == userId)
+                    .Select(q => q.brand);
+            }
+
+            var brand = await brandQuery
                 .Select(br => new BrandDto()
                 {
                     Id = br.Id,
@@ -112,6 +153,7 @@ namespace t_board_backend.Controllers
             return Ok(brand);
         }
 
+        [Authorize(Roles = "Admin, CompanyOwner")]
         [HttpPost("getBrandUsers")]
         [ProducesResponseType(typeof(BrandUserDto[]), 200)]
         public async Task<IActionResult> GetBrandUsers(int brandId)
@@ -194,6 +236,7 @@ namespace t_board_backend.Controllers
             return Ok();
         }
 
+        [Authorize(Roles = "Admin, CompanyOwner")]
         [HttpPost("createBrandUser")]
         public async Task<IActionResult> CreateBrandUser([FromBody] CreateBrandUserRequest createBrandUserRequest)
         {
@@ -249,6 +292,7 @@ namespace t_board_backend.Controllers
             return Ok();
         }
 
+        [Authorize(Roles = "Admin, CompanyOwner")]
         [HttpPost("updateBrand")]
         public async Task<IActionResult> UpdateBrand([FromBody] BrandDto brandDto)
         {
