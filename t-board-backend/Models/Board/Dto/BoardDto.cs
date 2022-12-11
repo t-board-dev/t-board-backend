@@ -1,4 +1,4 @@
-﻿namespace t_board_backend.Models.Board
+﻿namespace t_board_backend.Models.Board.Dto
 {
     public class BoardDto
     {

@@ -1,4 +1,4 @@
-﻿using t_board_backend.Models.Board;
+﻿using t_board_backend.Models.Board.Dto;
 
 namespace t_board_backend.Models.Brand.Dto
 {

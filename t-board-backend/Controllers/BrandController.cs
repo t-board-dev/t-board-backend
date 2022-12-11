@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using t_board.Entity;
 using t_board.Services.Contracts;
 using t_board_backend.Extensions;
-using t_board_backend.Models.Board;
+using t_board_backend.Models.Board.Dto;
 using t_board_backend.Models.Brand;
 using t_board_backend.Models.Brand.Dto;
 
@@ -176,20 +176,20 @@ namespace t_board_backend.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPost("createBrand")]
-        public async Task<IActionResult> CreateBrand([FromBody] BrandDto brandDto)
+        public async Task<IActionResult> CreateBrand([FromBody] CreateBrandRequest createBrandRequest)
         {
             var brand = new Brand
             {
-                CompanyId = brandDto.CompanyId,
-                Name = brandDto.Name,
-                LogoURL = brandDto.LogoURL,
-                Keywords = brandDto.Keywords,
-                Design = brandDto.Design
+                CompanyId = createBrandRequest.CompanyId,
+                Name = createBrandRequest.Name,
+                LogoURL = createBrandRequest.LogoURL,
+                Keywords = createBrandRequest.Keywords,
+                Design = createBrandRequest.Design
             };
 
             await _dbContext.Brands.AddAsync(brand);
             var brandCreated = await _dbContext.SaveChangesAsync();
-            if (brandCreated is 0) return UnprocessableEntity(brandDto);
+            if (brandCreated is 0) return UnprocessableEntity(createBrandRequest);
 
             return Ok();
         }

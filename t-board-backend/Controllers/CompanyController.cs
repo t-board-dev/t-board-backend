@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using t_board.Entity;
 using t_board.Services.Contracts;
-using t_board_backend.Models.Board;
+using t_board_backend.Models.Board.Dto;
 using t_board_backend.Models.Brand.Dto;
 using t_board_backend.Models.Company;
 using t_board_backend.Models.Company.Dto;
