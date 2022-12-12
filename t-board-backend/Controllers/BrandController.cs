@@ -93,7 +93,7 @@ namespace t_board_backend.Controllers
             return Ok(brands);
         }
 
-        [HttpPost("getBrand")]
+        [HttpGet("getBrand")]
         [ProducesResponseType(typeof(BrandDto), 200)]
         public async Task<IActionResult> GetBrand(int brandId)
         {
@@ -154,7 +154,7 @@ namespace t_board_backend.Controllers
         }
 
         [Authorize(Roles = "Admin, CompanyOwner")]
-        [HttpPost("getBrandUsers")]
+        [HttpGet("getBrandUsers")]
         [ProducesResponseType(typeof(BrandUserDto[]), 200)]
         public async Task<IActionResult> GetBrandUsers(int brandId)
         {
@@ -186,7 +186,7 @@ namespace t_board_backend.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpPost("getCompanyBrands")]
+        [HttpGet("getCompanyBrands")]
         [ProducesResponseType(typeof(BrandDto[]), 200)]
         public async Task<IActionResult> GetCompanyBrands(int companyId)
         {
