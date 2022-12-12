@@ -26,7 +26,7 @@ namespace t_board.Entity
 
         public DateTimeOffset CreateDate { get; set; }
 
-        public DateTimeOffset UpdateDate { get; set; }
+        public DateTimeOffset? UpdateDate { get; set; }
 
         public string CreateUser { get; set; }
 
