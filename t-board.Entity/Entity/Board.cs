@@ -25,6 +25,8 @@ namespace t_board.Entity
 
         public string CreateUser { get; set; }
 
+        public string UpdateUser { get; set; }
+
         public virtual Brand Brand { get; set; }
 
         public virtual ICollection<BoardItem> BoardItems { get; set; }

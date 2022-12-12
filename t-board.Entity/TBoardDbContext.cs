@@ -21,7 +21,7 @@ public class TBoardDbContext : IdentityDbContext
     public DbSet<BoardItem> BoardItems { get; set; }
     public DbSet<BoardItemType> BoardItemTypes { get; set; }
 
-    public DbSet<TBoardUser> BoardUsers { get; set; }
+    public DbSet<TBoardUser> TBoardUsers { get; set; }
 
     public DbSet<UserInvitation> UserInvitations { get; set; }
 
@@ -39,10 +39,12 @@ public class TBoardDbContext : IdentityDbContext
         builder.Entity<Board>(e =>
         {
             e.Property(b => b.BrandId).IsRequired();
-            e.Property(i => i.Name).IsRequired().HasMaxLength(256);
-            e.Property(i => i.Description).IsRequired().HasMaxLength(512);
-            e.Property(i => i.Status).IsRequired();
-            e.Property(i => i.Design).IsRequired().HasMaxLength(512);
+            e.Property(b => b.Name).IsRequired().HasMaxLength(256);
+            e.Property(b => b.Description).IsRequired().HasMaxLength(512);
+            e.Property(b => b.Status).IsRequired();
+            e.Property(b => b.Design).IsRequired().HasMaxLength(512);
+            e.Property(b => b.CreateUser).IsRequired().HasMaxLength(450);
+            e.Property(b => b.UpdateUser).IsRequired().HasMaxLength(450);
 
             e.HasOne(b => b.Brand)
              .WithMany(c => c.Boards)
