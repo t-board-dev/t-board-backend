@@ -102,8 +102,8 @@ namespace t_board_backend.Controllers
             var currentUser = await HttpContext.GetCurrentUserId();
 
             var brandUser = await _dbContext.BrandUsers
-                .Where(u => 
-                    u.UserId == currentUser && 
+                .Where(u =>
+                    u.UserId == currentUser &&
                     u.BrandId == board.BrandId)
                 .FirstOrDefaultAsync();
 
@@ -157,6 +157,7 @@ namespace t_board_backend.Controllers
                 Description = createBoardRequest.Description,
                 Status = createBoardRequest.Status,
                 Design = createBoardRequest.Design,
+                CreateDate = DateTimeOffset.Now,
                 CreateUser = currentUser
             };
 
@@ -181,6 +182,7 @@ namespace t_board_backend.Controllers
             board.Description = boardDto.Description;
             board.Status = boardDto.Status;
             board.Design = boardDto.Design;
+            board.CreateDate = DateTimeOffset.Now;
             board.UpdateUser = currentUser;
 
             _dbContext.Entry(board).State = EntityState.Modified;
@@ -220,7 +222,9 @@ namespace t_board_backend.Controllers
                             Type = boardItem.Type,
                             GridData = boardItem.GridData,
                             CustomGridData = boardItem.CustomGridData,
-                            Data = boardItem.Data
+                            Data = boardItem.Data,
+                            CreateDate = DateTimeOffset.Now,
+                            CreateUser = currentUser
                         };
 
                         _dbContext.Add(newBoardItem);
@@ -231,6 +235,8 @@ namespace t_board_backend.Controllers
                         currentBoardItem.GridData = boardItem.GridData;
                         currentBoardItem.CustomGridData = boardItem.CustomGridData;
                         currentBoardItem.Data = boardItem.Data;
+                        currentBoardItem.UpdateDate = DateTimeOffset.Now;
+                        currentBoardItem.UpdateUser = currentUser;
 
                         _dbContext.Entry(currentBoardItem).State = EntityState.Modified;
                     }
