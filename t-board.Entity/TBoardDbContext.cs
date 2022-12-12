@@ -44,7 +44,7 @@ public class TBoardDbContext : IdentityDbContext
             e.Property(b => b.Status).IsRequired();
             e.Property(b => b.Design).IsRequired().HasMaxLength(512);
             e.Property(b => b.CreateUser).IsRequired().HasMaxLength(450);
-            e.Property(b => b.UpdateUser).IsRequired().HasMaxLength(450);
+            e.Property(b => b.UpdateUser).HasMaxLength(450);
 
             e.HasOne(b => b.Brand)
              .WithMany(c => c.Boards)
