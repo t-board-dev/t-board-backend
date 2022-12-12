@@ -36,14 +36,12 @@ namespace t_board_backend.Controllers
             return Ok(_roleManager.Roles?.Select(r => r.NormalizedName).ToArray() ?? Array.Empty<string>());
         }
 
-        [HttpPost("getUserRoles")]
+        [HttpGet("getUserRoles")]
         [ProducesResponseType(typeof(string[]), 200)]
-        public async Task<IActionResult> GetUserRoles([FromBody] GetUserRolesRequest getUserRolesRequest)
+        public async Task<IActionResult> GetUserRoles(string email)
         {
-            if (ModelState.IsValid is false) return BadRequest(getUserRolesRequest);
-
-            var user = await _userManager.FindByEmailAsync(getUserRolesRequest.Email);
-            if (user == null) return NotFound(getUserRolesRequest.Email);
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null) return NotFound(email);
 
             var roles = await _userManager.GetRolesAsync(user);
 
@@ -53,8 +51,6 @@ namespace t_board_backend.Controllers
         [HttpPost("createRole")]
         public async Task<IActionResult> CreateRole([FromBody] CreateRoleRequest createRoleRequest)
         {
-            if (ModelState.IsValid is false) return BadRequest(createRoleRequest);
-
             var roleCreated = await _roleManager.CreateAsync(new IdentityRole(createRoleRequest.RoleName));
 
             if (roleCreated.Succeeded is false) return UnprocessableEntity(roleCreated.Errors);
@@ -65,8 +61,6 @@ namespace t_board_backend.Controllers
         [HttpPost("addRoleToUser")]
         public async Task<IActionResult> AddRoleToUser([FromBody] UserRoleRequest userRoleRequest)
         {
-            if (ModelState.IsValid is false) return BadRequest(userRoleRequest);
-
             var userEmail = userRoleRequest.UserEmail;
 
             var user = await _userManager.FindByEmailAsync(userEmail);
@@ -87,8 +81,6 @@ namespace t_board_backend.Controllers
         [HttpPost("removeUserRole")]
         public async Task<IActionResult> RemoveUserRole([FromBody] UserRoleRequest userRoleRequest)
         {
-            if (ModelState.IsValid is false) return BadRequest(userRoleRequest);
-
             var userEmail = userRoleRequest.UserEmail;
 
             var user = await _userManager.FindByEmailAsync(userEmail);
