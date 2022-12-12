@@ -23,6 +23,8 @@ namespace t_board.Entity
 
         public string Design { get; set; }
 
+        public string CreateUser { get; set; }
+
         public virtual Brand Brand { get; set; }
 
         public virtual ICollection<BoardItem> BoardItems { get; set; }

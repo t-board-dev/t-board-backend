@@ -121,7 +121,8 @@ namespace t_board_backend.Controllers
                 Name = createBoardRequest.Name,
                 Description = createBoardRequest.Description,
                 Status = createBoardRequest.Status,
-                Design = createBoardRequest.Design
+                Design = createBoardRequest.Design,
+                CreateUser = currentUser
             };
 
             _dbContext.Add(newBoard);
