@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace t_board.Entity
@@ -18,6 +19,10 @@ namespace t_board.Entity
         public int Type { get; set; }
 
         public string LogoURL { get; set; }
+
+        public DateTimeOffset CreateDate { get; set; }
+
+        public DateTimeOffset UpdateDate { get; set; }
 
         public virtual ICollection<Brand> Brands { get; set; }
     }

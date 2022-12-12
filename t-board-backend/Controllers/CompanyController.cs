@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using t_board.Entity;
@@ -221,7 +222,8 @@ namespace t_board_backend.Controllers
             {
                 Name = createCompanyRequest.CompanyName,
                 Type = createCompanyRequest.CompanyType,
-                LogoURL = createCompanyRequest.CompanyUrl
+                LogoURL = createCompanyRequest.CompanyUrl,
+                CreateDate = DateTimeOffset.Now
             };
 
             var owner = new TBoardUser
@@ -266,6 +268,7 @@ namespace t_board_backend.Controllers
             company.Name = companyDto.Name;
             company.Type = companyDto.Type;
             company.LogoURL = companyDto.LogoURL;
+            company.UpdateDate = DateTimeOffset.Now;
 
             _dbContext.Entry(company).State = EntityState.Modified;
 
