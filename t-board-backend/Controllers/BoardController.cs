@@ -40,6 +40,8 @@ namespace t_board_backend.Controllers
                     Description = b.Description,
                     Status = b.Status,
                     Design = b.Design,
+                    CreateDate = b.CreateDate,
+                    UpdateDate = b.UpdateDate,
                     CreateUser = b.CreateUser,
                     UpdateUser = b.UpdateUser
                 })
@@ -82,6 +84,8 @@ namespace t_board_backend.Controllers
                     Description = b.Description,
                     Status = b.Status,
                     Design = b.Design,
+                    CreateDate = b.CreateDate,
+                    UpdateDate = b.UpdateDate,
                     CreateUser = b.CreateUser,
                     UpdateUser = b.UpdateUser
                 })
@@ -119,7 +123,11 @@ namespace t_board_backend.Controllers
                     Type = b.Type,
                     GridData = b.GridData,
                     CustomGridData = b.CustomGridData,
-                    Data = b.Data
+                    Data = b.Data,
+                    CreateDate = b.CreateDate,
+                    UpdateDate = b.UpdateDate,
+                    CreateUser = b.CreateUser,
+                    UpdateUser = b.UpdateUser
                 })
                 .ToArray();
 
@@ -182,7 +190,7 @@ namespace t_board_backend.Controllers
             board.Description = boardDto.Description;
             board.Status = boardDto.Status;
             board.Design = boardDto.Design;
-            board.CreateDate = DateTimeOffset.Now;
+            board.UpdateDate = DateTimeOffset.Now;
             board.UpdateUser = currentUser;
 
             _dbContext.Entry(board).State = EntityState.Modified;

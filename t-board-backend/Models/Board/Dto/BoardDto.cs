@@ -1,4 +1,6 @@
-﻿namespace t_board_backend.Models.Board.Dto
+﻿using System;
+
+namespace t_board_backend.Models.Board.Dto
 {
     public class BoardDto
     {
@@ -13,6 +15,10 @@
         public short Status { get; set; }
 
         public string Design { get; set; }
+
+        public DateTimeOffset CreateDate{ get; set; }
+
+        public DateTimeOffset? UpdateDate { get; set; }
 
         public string CreateUser { get; set; }
 

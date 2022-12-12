@@ -49,6 +49,8 @@ namespace t_board_backend.Controllers
                     Name = c.Name,
                     Type = c.Type,
                     LogoURL = c.LogoURL,
+                    CreateDate = c.CreateDate,
+                    UpdateDate = c.UpdateDate,
                     Brands = c.Brands.Select(br => new BrandDto()
                     {
                         Id = br.Id,
@@ -57,6 +59,8 @@ namespace t_board_backend.Controllers
                         LogoURL = br.LogoURL,
                         Keywords = br.Keywords,
                         Design = br.Design,
+                        CreateDate = br.CreateDate,
+                        UpdateDate = br.UpdateDate,
                         Boards = br.Boards.Select(bo => new BoardDto()
                         {
                             Id = bo.Id,
@@ -64,7 +68,11 @@ namespace t_board_backend.Controllers
                             Name = bo.Name,
                             Description = bo.Description,
                             Status = bo.Status,
-                            Design = bo.Design
+                            Design = bo.Design,
+                            CreateDate = bo.CreateDate,
+                            UpdateDate = bo.UpdateDate,
+                            CreateUser = bo.CreateUser,
+                            UpdateUser = bo.UpdateUser
                         })
                         .ToArray()
                     })
@@ -89,6 +97,8 @@ namespace t_board_backend.Controllers
                     Name = c.Name,
                     Type = c.Type,
                     LogoURL = c.LogoURL,
+                    CreateDate = c.CreateDate,
+                    UpdateDate = c.UpdateDate,
                     Brands = c.Brands.Select(br => new BrandDto()
                     {
                         Id = br.Id,
@@ -97,6 +107,8 @@ namespace t_board_backend.Controllers
                         LogoURL = br.LogoURL,
                         Keywords = br.Keywords,
                         Design = br.Design,
+                        CreateDate = br.CreateDate,
+                        UpdateDate = br.UpdateDate,
                         Boards = br.Boards.Select(bo => new BoardDto()
                         {
                             Id = bo.Id,
@@ -104,7 +116,11 @@ namespace t_board_backend.Controllers
                             Name = bo.Name,
                             Description = bo.Description,
                             Status = bo.Status,
-                            Design = bo.Design
+                            Design = bo.Design,
+                            CreateDate = bo.CreateDate,
+                            UpdateDate = bo.UpdateDate,
+                            CreateUser = bo.CreateUser,
+                            UpdateUser = bo.UpdateUser
                         })
                         .ToArray()
                     })
@@ -207,7 +223,9 @@ namespace t_board_backend.Controllers
                                         Name = b.Name,
                                         LogoURL = b.LogoURL,
                                         Keywords = b.Keywords,
-                                        Design = b.Design
+                                        Design = b.Design,
+                                        CreateDate = b.CreateDate,
+                                        UpdateDate = b.UpdateDate,
                                     }
                                 })
                                 .ToArrayAsync();
