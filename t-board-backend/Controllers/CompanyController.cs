@@ -186,7 +186,7 @@ namespace t_board_backend.Controllers
 
             if (company == null) return NotFound(companyId);
 
-            var companyUsers = (from cu in _dbContext.CompanyUsers
+            var companyUsers = await (from cu in _dbContext.CompanyUsers
                                 join u in _dbContext.TBoardUsers on cu.UserId equals u.Id
                                 join bu in _dbContext.BrandUsers on u.Id equals bu.UserId
                                 join b in _dbContext.Brands on bu.BrandId equals b.Id
