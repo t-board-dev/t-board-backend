@@ -169,7 +169,7 @@ namespace t_board_backend.Controllers
             if (brand == null) return NotFound(brandId);
 
             var brandUsers = await _dbContext.BrandUsers
-                .Join(_dbContext.BoardUsers, bu => bu.UserId, u => u.Id,
+                .Join(_dbContext.TBoardUsers, bu => bu.UserId, u => u.Id,
                 (bu, u) => new BrandUserDto()
                 {
                     BrandId = bu.BrandId,
@@ -177,6 +177,7 @@ namespace t_board_backend.Controllers
                     LastName = u.LastName,
                     Email = u.Email,
                     Title = u.Title,
+                    AvatarURL = u.AvatarURL,
                     AccountLocked = u.LockoutEnabled
                 })
                 .Where(bu => bu.BrandId == brand.Id)
@@ -226,7 +227,8 @@ namespace t_board_backend.Controllers
                 Name = createBrandRequest.Name,
                 LogoURL = createBrandRequest.LogoURL,
                 Keywords = createBrandRequest.Keywords,
-                Design = createBrandRequest.Design
+                Design = createBrandRequest.Design,
+                CreateDate = DateTimeOffset.Now
             };
 
             await _dbContext.Brands.AddAsync(brand);
@@ -303,6 +305,7 @@ namespace t_board_backend.Controllers
             brand.LogoURL = brandDto.LogoURL;
             brand.Keywords = brandDto.Keywords;
             brand.Design = brandDto.Design;
+            brand.UpdateDate = DateTimeOffset.Now;
 
             _dbContext.Entry(brand).State = EntityState.Modified;
 

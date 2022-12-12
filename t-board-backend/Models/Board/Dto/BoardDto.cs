@@ -13,5 +13,9 @@
         public short Status { get; set; }
 
         public string Design { get; set; }
+
+        public string CreateUser { get; set; }
+
+        public string UpdateUser { get; set; }
     }
 }

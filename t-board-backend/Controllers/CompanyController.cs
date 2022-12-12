@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using t_board.Entity;
@@ -153,7 +154,7 @@ namespace t_board_backend.Controllers
                     companyUser,
                     userRole
                 })
-                .Join(_dbContext.BoardUsers,
+                .Join(_dbContext.TBoardUsers,
                 combined => combined.companyUser.UserId,
                 boardUser => boardUser.Id,
                 (combined, boardUser) => new { combined, boardUser })
@@ -167,6 +168,7 @@ namespace t_board_backend.Controllers
                     LastName = q.boardUser.LastName,
                     Email = q.boardUser.Email,
                     Title = q.boardUser.Title,
+                    AvatarURL = q.boardUser.AvatarURL,
                     AccountLocked = q.boardUser.LockoutEnabled
                 })
                 .FirstOrDefaultAsync();
@@ -184,19 +186,31 @@ namespace t_board_backend.Controllers
 
             if (company == null) return NotFound(companyId);
 
-            var companyUsers = await _dbContext.CompanyUsers
-                .Join(_dbContext.BoardUsers, cu => cu.UserId, u => u.Id,
-                (cu, u) => new CompanyUserDto()
-                {
-                    CompanyId = cu.CompanyId,
-                    FirstName = u.FirstName,
-                    LastName = u.LastName,
-                    Email = u.Email,
-                    Title = u.Title,
-                    AccountLocked = u.LockoutEnabled
-                })
-                .Where(cu => cu.CompanyId == company.Id)
-                .ToArrayAsync();
+            var companyUsers = await (from cu in _dbContext.CompanyUsers
+                                join u in _dbContext.TBoardUsers on cu.UserId equals u.Id
+                                join bu in _dbContext.BrandUsers on u.Id equals bu.UserId
+                                join b in _dbContext.Brands on bu.BrandId equals b.Id
+                                where cu.CompanyId == companyId
+                                select new CompanyUserDto()
+                                {
+                                    CompanyId = cu.CompanyId,
+                                    FirstName = u.FirstName,
+                                    LastName = u.LastName,
+                                    Email = u.Email,
+                                    Title = u.Title,
+                                    AvatarURL = u.AvatarURL,
+                                    AccountLocked = u.LockoutEnabled,
+                                    Brands = new BrandDto()
+                                    {
+                                        Id = b.Id,
+                                        CompanyId = b.CompanyId,
+                                        Name = b.Name,
+                                        LogoURL = b.LogoURL,
+                                        Keywords = b.Keywords,
+                                        Design = b.Design
+                                    }
+                                })
+                                .ToArrayAsync();
 
             return Ok(companyUsers);
         }
@@ -208,7 +222,8 @@ namespace t_board_backend.Controllers
             {
                 Name = createCompanyRequest.CompanyName,
                 Type = createCompanyRequest.CompanyType,
-                LogoURL = createCompanyRequest.CompanyUrl
+                LogoURL = createCompanyRequest.CompanyUrl,
+                CreateDate = DateTimeOffset.Now
             };
 
             var owner = new TBoardUser
@@ -253,6 +268,7 @@ namespace t_board_backend.Controllers
             company.Name = companyDto.Name;
             company.Type = companyDto.Type;
             company.LogoURL = companyDto.LogoURL;
+            company.UpdateDate = DateTimeOffset.Now;
 
             _dbContext.Entry(company).State = EntityState.Modified;
 

@@ -25,14 +25,34 @@ namespace t_board_backend.Controllers
         }
 
         [HttpGet("getBoard")]
+        [ProducesResponseType(typeof(BoardDto), 200)]
         public async Task<IActionResult> GetBoard([FromQuery] int boardId)
         {
             var currentUser = await HttpContext.GetCurrentUserId();
 
-            var board = await _dbContext.Boards.Where(b => b.Id == boardId).FirstOrDefaultAsync();
+            var board = await _dbContext.Boards
+                .Where(b => b.Id == boardId)
+                .Select(b => new BoardDto()
+                {
+                    Id = b.Id,
+                    BrandId = b.BrandId,
+                    Name = b.Name,
+                    Description = b.Description,
+                    Status = b.Status,
+                    Design = b.Design,
+                    CreateUser = b.CreateUser,
+                    UpdateUser = b.UpdateUser
+                })
+                .FirstOrDefaultAsync();
+
             if (board == null) return NotFound();
 
-            var brandUser = await _dbContext.BrandUsers.Where(u => u.UserId == currentUser && u.BrandId == board.BrandId).FirstOrDefaultAsync();
+            var brandUser = await _dbContext.BrandUsers
+                .Where(u =>
+                    u.UserId == currentUser &&
+                    u.BrandId == board.BrandId)
+                .FirstOrDefaultAsync();
+
             if (brandUser == null) return Forbid();
 
             return Ok(board);
@@ -44,7 +64,12 @@ namespace t_board_backend.Controllers
         {
             var currentUser = await HttpContext.GetCurrentUserId();
 
-            var brandUser = await _dbContext.BrandUsers.Where(u => u.UserId == currentUser && u.BrandId == brandId).FirstOrDefaultAsync();
+            var brandUser = await _dbContext.BrandUsers
+                .Where(u =>
+                    u.UserId == currentUser &&
+                    u.BrandId == brandId)
+                .FirstOrDefaultAsync();
+
             if (brandUser == null) return NotFound();
 
             var boards = await _dbContext.Boards
@@ -56,7 +81,9 @@ namespace t_board_backend.Controllers
                     Name = b.Name,
                     Description = b.Description,
                     Status = b.Status,
-                    Design = b.Design
+                    Design = b.Design,
+                    CreateUser = b.CreateUser,
+                    UpdateUser = b.UpdateUser
                 })
                 .ToArrayAsync();
 
@@ -67,11 +94,19 @@ namespace t_board_backend.Controllers
         [ProducesResponseType(typeof(BoardItemDto[]), 200)]
         public async Task<IActionResult> GetBoardItems([FromQuery] int boardId)
         {
-            var board = await _dbContext.Boards.Where(b => b.Id == boardId).Include(b => b.BoardItems).FirstOrDefaultAsync();
+            var board = await _dbContext.Boards
+                .Where(b => b.Id == boardId)
+                .Include(b => b.BoardItems)
+                .FirstOrDefaultAsync();
 
             var currentUser = await HttpContext.GetCurrentUserId();
 
-            var brandUser = await _dbContext.BrandUsers.Where(u => u.UserId == currentUser && u.BrandId == board.BrandId).FirstOrDefaultAsync();
+            var brandUser = await _dbContext.BrandUsers
+                .Where(u =>
+                    u.UserId == currentUser &&
+                    u.BrandId == board.BrandId)
+                .FirstOrDefaultAsync();
+
             if (brandUser == null) return NotFound();
 
             var boardItems = board.BoardItems
@@ -121,7 +156,9 @@ namespace t_board_backend.Controllers
                 Name = createBoardRequest.Name,
                 Description = createBoardRequest.Description,
                 Status = createBoardRequest.Status,
-                Design = createBoardRequest.Design
+                Design = createBoardRequest.Design,
+                CreateDate = DateTimeOffset.Now,
+                CreateUser = currentUser
             };
 
             _dbContext.Add(newBoard);
@@ -145,6 +182,8 @@ namespace t_board_backend.Controllers
             board.Description = boardDto.Description;
             board.Status = boardDto.Status;
             board.Design = boardDto.Design;
+            board.CreateDate = DateTimeOffset.Now;
+            board.UpdateUser = currentUser;
 
             _dbContext.Entry(board).State = EntityState.Modified;
 
@@ -183,7 +222,9 @@ namespace t_board_backend.Controllers
                             Type = boardItem.Type,
                             GridData = boardItem.GridData,
                             CustomGridData = boardItem.CustomGridData,
-                            Data = boardItem.Data
+                            Data = boardItem.Data,
+                            CreateDate = DateTimeOffset.Now,
+                            CreateUser = currentUser
                         };
 
                         _dbContext.Add(newBoardItem);
@@ -194,6 +235,8 @@ namespace t_board_backend.Controllers
                         currentBoardItem.GridData = boardItem.GridData;
                         currentBoardItem.CustomGridData = boardItem.CustomGridData;
                         currentBoardItem.Data = boardItem.Data;
+                        currentBoardItem.UpdateDate = DateTimeOffset.Now;
+                        currentBoardItem.UpdateUser = currentUser;
 
                         _dbContext.Entry(currentBoardItem).State = EntityState.Modified;
                     }
