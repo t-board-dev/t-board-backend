@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace t_board.Entity
@@ -22,6 +23,10 @@ namespace t_board.Entity
         public string Keywords { get; set; }
 
         public string Design { get; set; }
+
+        public DateTimeOffset CreateDate { get; set; }
+
+        public DateTimeOffset UpdateDate { get; set; }
 
         public virtual Company Company { get; set; }
 

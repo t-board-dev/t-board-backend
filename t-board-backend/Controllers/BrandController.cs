@@ -227,7 +227,8 @@ namespace t_board_backend.Controllers
                 Name = createBrandRequest.Name,
                 LogoURL = createBrandRequest.LogoURL,
                 Keywords = createBrandRequest.Keywords,
-                Design = createBrandRequest.Design
+                Design = createBrandRequest.Design,
+                CreateDate = DateTimeOffset.Now
             };
 
             await _dbContext.Brands.AddAsync(brand);
@@ -304,6 +305,7 @@ namespace t_board_backend.Controllers
             brand.LogoURL = brandDto.LogoURL;
             brand.Keywords = brandDto.Keywords;
             brand.Design = brandDto.Design;
+            brand.UpdateDate = DateTimeOffset.Now;
 
             _dbContext.Entry(brand).State = EntityState.Modified;
 
