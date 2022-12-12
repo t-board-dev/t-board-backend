@@ -169,7 +169,7 @@ namespace t_board_backend.Controllers
             if (brand == null) return NotFound(brandId);
 
             var brandUsers = await _dbContext.BrandUsers
-                .Join(_dbContext.BoardUsers, bu => bu.UserId, u => u.Id,
+                .Join(_dbContext.TBoardUsers, bu => bu.UserId, u => u.Id,
                 (bu, u) => new BrandUserDto()
                 {
                     BrandId = bu.BrandId,

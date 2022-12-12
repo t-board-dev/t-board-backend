@@ -114,7 +114,7 @@ namespace t_board_backend.Controllers
                 return Unauthorized();
 
             var userId = await HttpContext.GetCurrentUserId();
-            var user = await _dbContext.BoardUsers.FirstOrDefaultAsync(u => u.Id == userId);
+            var user = await _dbContext.TBoardUsers.FirstOrDefaultAsync(u => u.Id == userId);
             var userRoles = await _userManager.GetRolesAsync(user);
             var companyUser = await _dbContext.CompanyUsers.FirstOrDefaultAsync(cu => cu.UserId == user.Id);
 
