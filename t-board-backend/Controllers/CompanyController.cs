@@ -167,6 +167,7 @@ namespace t_board_backend.Controllers
                     LastName = q.boardUser.LastName,
                     Email = q.boardUser.Email,
                     Title = q.boardUser.Title,
+                    AvatarURL = q.boardUser.AvatarURL,
                     AccountLocked = q.boardUser.LockoutEnabled
                 })
                 .FirstOrDefaultAsync();
@@ -196,6 +197,7 @@ namespace t_board_backend.Controllers
                                     LastName = u.LastName,
                                     Email = u.Email,
                                     Title = u.Title,
+                                    AvatarURL = u.AvatarURL,
                                     AccountLocked = u.LockoutEnabled,
                                     Brands = new BrandDto()
                                     {

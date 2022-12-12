@@ -177,6 +177,7 @@ namespace t_board_backend.Controllers
                     LastName = u.LastName,
                     Email = u.Email,
                     Title = u.Title,
+                    AvatarURL = u.AvatarURL,
                     AccountLocked = u.LockoutEnabled
                 })
                 .Where(bu => bu.BrandId == brand.Id)
