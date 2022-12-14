@@ -3,8 +3,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace t_board_backend.Models.User
 {
-    public class SetPasswordRequest
+    public class ChangePasswordRequest
     {
+        [Required]
+        [JsonProperty("currentPassword")]
+        public string CurrentPassword { get; set; }
+
         [Required]
         [JsonProperty("password")]
         public string Password { get; set; }
@@ -12,9 +16,5 @@ namespace t_board_backend.Models.User
         [Required]
         [JsonProperty("confirmPassword")]
         public string ConfirmPassword { get; set; }
-
-        [Required]
-        [JsonProperty("inviteCode")]
-        public string InviteCode { get; set; }
     }
 }

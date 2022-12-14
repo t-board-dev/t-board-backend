@@ -285,7 +285,7 @@ namespace t_board_backend.Controllers
 
         [Authorize]
         [HttpPost("changePassword")]
-        public async Task<IActionResult> ChangePassword([FromBody] SetPasswordRequest setPasswordRequest)
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest setPasswordRequest)
         {
             var userId = await HttpContext.GetCurrentUserId();
 
@@ -294,7 +294,7 @@ namespace t_board_backend.Controllers
 
             if (string.Equals(setPasswordRequest.Password, setPasswordRequest.ConfirmPassword) is false) return BadRequest("Passwords does not match!");
 
-            var result = await _userManager.ChangePasswordAsync(user, setPasswordRequest.Password, setPasswordRequest.ConfirmPassword);
+            var result = await _userManager.ChangePasswordAsync(user, setPasswordRequest.CurrentPassword, setPasswordRequest.Password);
             if (result.Succeeded is false) return Problem("Password could not changed!");
 
             return Ok();
@@ -338,17 +338,17 @@ namespace t_board_backend.Controllers
         }
 
         [HttpPost("resetPassword")]
-        public async Task<IActionResult> ResetPassword(string resetToken, string email, [FromBody] SetPasswordRequest setPasswordRequest)
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest resetPasswordRequest)
         {
-            if (string.IsNullOrEmpty(resetToken)) return BadRequest();
-            if (string.IsNullOrEmpty(email)) return BadRequest();
+            if (string.IsNullOrEmpty(resetPasswordRequest.ResetToken)) return BadRequest();
+            if (string.IsNullOrEmpty(resetPasswordRequest.Email)) return BadRequest();
 
-            var user = await _userManager.FindByEmailAsync(email);
+            var user = await _userManager.FindByEmailAsync(resetPasswordRequest.Email);
             if (user == null) BadRequest();
 
-            if (string.Equals(setPasswordRequest.Password, setPasswordRequest.ConfirmPassword) is false) return BadRequest("Passwords does not match!");
+            if (string.Equals(resetPasswordRequest.Password, resetPasswordRequest.ConfirmPassword) is false) return BadRequest("Passwords does not match!");
 
-            var result = await _userManager.ResetPasswordAsync(user, HttpUtility.UrlDecode(resetToken), setPasswordRequest.Password);
+            var result = await _userManager.ResetPasswordAsync(user, HttpUtility.UrlDecode(resetPasswordRequest.ResetToken), resetPasswordRequest.Password);
             if (result.Succeeded is false) return Problem("Password could not reset!");
 
             return Ok();
