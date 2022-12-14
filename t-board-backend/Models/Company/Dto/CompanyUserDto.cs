@@ -11,6 +11,7 @@ namespace t_board_backend.Models.Company.Dto
         public string Title { get; set; }
         public string AvatarURL { get; set; }
         public bool AccountLocked { get; set; }
-        public BrandDto Brands { get; set; }
+        public bool IsCompanyOwner { get; set; }
+        public BrandDto[] Brands { get; set; }
     }
 }

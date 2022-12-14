@@ -93,6 +93,7 @@ namespace t_board_backend.Controllers
                     Email = user.Email,
                     Title = user.Title,
                     PhoneNumber = user.PhoneNumber,
+                    AccountLocked = await _userService.IsUserLocked(user.Email),
                     Roles = userRoles.ToArray(),
                     CompanyId = companyUser?.CompanyId
                 };
@@ -100,7 +101,7 @@ namespace t_board_backend.Controllers
                 return Ok(userInfo);
             }
 
-            if (result.IsLockedOut) return Forbid("User locked!");
+            if (result.IsLockedOut) return new ObjectResult("User locked!") { StatusCode = 403 };
 
             return BadRequest("Check credentials!");
         }
@@ -115,6 +116,10 @@ namespace t_board_backend.Controllers
 
             var userId = await HttpContext.GetCurrentUserId();
             var user = await _dbContext.TBoardUsers.FirstOrDefaultAsync(u => u.Id == userId);
+
+            var isUserLocked = await _userService.IsUserLocked(user.Email);
+            if (isUserLocked) return new ObjectResult("User locked!") { StatusCode = 403 };
+
             var userRoles = await _userManager.GetRolesAsync(user);
             var companyUser = await _dbContext.CompanyUsers.FirstOrDefaultAsync(cu => cu.UserId == user.Id);
 
@@ -125,6 +130,7 @@ namespace t_board_backend.Controllers
                 Email = user.Email,
                 Title = user.Title,
                 PhoneNumber = user.PhoneNumber,
+                AccountLocked = await _userService.IsUserLocked(user.Email),
                 Roles = userRoles.ToArray(),
                 CompanyId = companyUser?.CompanyId
             });
@@ -160,17 +166,17 @@ namespace t_board_backend.Controllers
         [HttpPost("lockUser")]
         public async Task<IActionResult> LockUser(string email)
         {
-            return await SetUserLockout(email, true);
+            return await SetUserLock(email, true);
         }
 
         [Authorize(Roles = "Admin, CompanyOwner")]
         [HttpPost("unlockUser")]
         public async Task<IActionResult> UnlockUser(string email)
         {
-            return await SetUserLockout(email, false);
+            return await SetUserLock(email, false);
         }
 
-        private async Task<IActionResult> SetUserLockout(string userEmail, bool locked)
+        private async Task<IActionResult> SetUserLock(string userEmail, bool locked)
         {
             var user = await _userManager.FindByEmailAsync(userEmail);
             if (user == null) return NotFound();
@@ -181,10 +187,18 @@ namespace t_board_backend.Controllers
 
             if (HttpContext.IsCurrentUserAdmin() is false && userIsAdminOrCompanyOwner) return Forbid();
 
-            var disabled = await _userManager.SetLockoutEnabledAsync(user, locked);
-            if (disabled.Succeeded is false) return UnprocessableEntity(disabled.Errors);
+            if (locked)
+            {
+                var userLocked = await _userService.LockUser(userEmail);
+                if (userLocked) return Ok();
 
-            return Ok();
+                return Problem("User could not locked!");
+            }
+
+            var userUnlocked = await _userService.UnlockUser(userEmail);
+            if (userUnlocked) return Ok();
+
+            return Problem("User could not unlock!");
         }
 
         [Authorize(Roles = "Admin")]
@@ -261,6 +275,8 @@ namespace t_board_backend.Controllers
                 if (confirmPhoneResult.Succeeded is false) return UnprocessableEntity(confirmPhoneResult.Errors);
             }
 
+            var userUnlocked = await _userService.UnlockUser(user.Email);
+
             invitation.IsConfirmed = true;
             invitation.ConfirmDate = DateTime.Now;
 
@@ -271,7 +287,7 @@ namespace t_board_backend.Controllers
 
         [Authorize]
         [HttpPost("changePassword")]
-        public async Task<IActionResult> ChangePassword([FromBody] SetPasswordRequest setPasswordRequest)
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest setPasswordRequest)
         {
             var userId = await HttpContext.GetCurrentUserId();
 
@@ -280,7 +296,7 @@ namespace t_board_backend.Controllers
 
             if (string.Equals(setPasswordRequest.Password, setPasswordRequest.ConfirmPassword) is false) return BadRequest("Passwords does not match!");
 
-            var result = await _userManager.ChangePasswordAsync(user, setPasswordRequest.Password, setPasswordRequest.ConfirmPassword);
+            var result = await _userManager.ChangePasswordAsync(user, setPasswordRequest.CurrentPassword, setPasswordRequest.Password);
             if (result.Succeeded is false) return Problem("Password could not changed!");
 
             return Ok();
@@ -324,17 +340,17 @@ namespace t_board_backend.Controllers
         }
 
         [HttpPost("resetPassword")]
-        public async Task<IActionResult> ResetPassword(string resetToken, string email, [FromBody] SetPasswordRequest setPasswordRequest)
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest resetPasswordRequest)
         {
-            if (string.IsNullOrEmpty(resetToken)) return BadRequest();
-            if (string.IsNullOrEmpty(email)) return BadRequest();
+            if (string.IsNullOrEmpty(resetPasswordRequest.ResetToken)) return BadRequest();
+            if (string.IsNullOrEmpty(resetPasswordRequest.Email)) return BadRequest();
 
-            var user = await _userManager.FindByEmailAsync(email);
+            var user = await _userManager.FindByEmailAsync(resetPasswordRequest.Email);
             if (user == null) BadRequest();
 
-            if (string.Equals(setPasswordRequest.Password, setPasswordRequest.ConfirmPassword) is false) return BadRequest("Passwords does not match!");
+            if (string.Equals(resetPasswordRequest.Password, resetPasswordRequest.ConfirmPassword) is false) return BadRequest("Passwords does not match!");
 
-            var result = await _userManager.ResetPasswordAsync(user, HttpUtility.UrlDecode(resetToken), setPasswordRequest.Password);
+            var result = await _userManager.ResetPasswordAsync(user, HttpUtility.UrlDecode(resetPasswordRequest.ResetToken), resetPasswordRequest.Password);
             if (result.Succeeded is false) return Problem("Password could not reset!");
 
             return Ok();

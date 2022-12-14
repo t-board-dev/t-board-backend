@@ -190,7 +190,7 @@ namespace t_board_backend.Controllers
                     Email = u.Email,
                     Title = u.Title,
                     AvatarURL = u.AvatarURL,
-                    AccountLocked = u.LockoutEnabled
+                    AccountLocked = u.LockoutEnabled && u.LockoutEnd > DateTime.Now
                 })
                 .Where(bu => bu.BrandId == brand.Id)
                 .ToArrayAsync();

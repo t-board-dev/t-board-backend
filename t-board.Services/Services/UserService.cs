@@ -13,6 +13,8 @@ namespace t_board.Services.Services
 {
     public sealed class UserService : IUserService
     {
+        private readonly DateTime EndDate = new DateTime(2050, 01, 01);
+
         private readonly UserManager<TBoardUser> _userManager;
 
         private readonly TBoardDbContext _dbContext;
@@ -64,6 +66,37 @@ namespace t_board.Services.Services
             }
 
             return claims;
+        }
+
+        public async Task<bool> LockUser(string email, DateTime? endDate = null)
+        {
+            if (endDate == null) endDate = EndDate;
+
+            var user = await _userManager.FindByEmailAsync(email);
+
+            var lockUserResult = await _userManager.SetLockoutEnabledAsync(user, true);
+
+            var lockDateResult = await _userManager.SetLockoutEndDateAsync(user, endDate);
+
+            return lockDateResult.Succeeded && lockUserResult.Succeeded;
+        }
+
+        public async Task<bool> UnlockUser(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+
+            var setLockoutEndDateResult = await _userManager.SetLockoutEndDateAsync(user, DateTime.Now - TimeSpan.FromMinutes(1));
+
+            var lockDisabledResult = await _userManager.SetLockoutEnabledAsync(user, false);
+
+            return setLockoutEndDateResult.Succeeded && lockDisabledResult.Succeeded;
+        }
+
+        public async Task<bool> IsUserLocked(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            
+            return user.LockoutEnabled && user.LockoutEnd > DateTime.Now;
         }
     }
 }

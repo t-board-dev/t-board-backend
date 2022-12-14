@@ -149,48 +149,48 @@ namespace t_board_backend.Controllers
             return Ok(companyTypes);
         }
 
-        [HttpGet("getCompanyOwner")]
-        [ProducesResponseType(typeof(CompanyUserDto[]), 200)]
-        public async Task<IActionResult> GetCompanyOwner(int companyId)
-        {
-            var company = await _dbContext.Companies
-                .Where(c => c.Id == companyId)
-                .FirstOrDefaultAsync();
+        //[HttpGet("getCompanyOwner")]
+        //[ProducesResponseType(typeof(CompanyUserDto[]), 200)]
+        //public async Task<IActionResult> GetCompanyOwner(int companyId)
+        //{
+        //    var company = await _dbContext.Companies
+        //        .Where(c => c.Id == companyId)
+        //        .FirstOrDefaultAsync();
 
-            if (company == null) return NotFound(companyId);
+        //    if (company == null) return NotFound(companyId);
 
-            var companyOwnerRole = await _dbContext.Roles.Where(r => r.Name == "CompanyOwner").FirstOrDefaultAsync();
+        //    var companyOwnerRole = await _dbContext.Roles.Where(r => r.Name == "CompanyOwner").FirstOrDefaultAsync();
 
-            var companyUsers = await _dbContext.CompanyUsers
-                .Join(_dbContext.UserRoles,
-                cu => cu.UserId,
-                ur => ur.UserId,
-                (companyUser, userRole) => new
-                {
-                    companyUser,
-                    userRole
-                })
-                .Join(_dbContext.TBoardUsers,
-                combined => combined.companyUser.UserId,
-                boardUser => boardUser.Id,
-                (combined, boardUser) => new { combined, boardUser })
-                .Where(q =>
-                    q.combined.companyUser.CompanyId == company.Id &&
-                    q.combined.userRole.RoleId == companyOwnerRole.Id)
-                .Select(q => new CompanyUserDto()
-                {
-                    CompanyId = q.combined.companyUser.CompanyId,
-                    FirstName = q.boardUser.FirstName,
-                    LastName = q.boardUser.LastName,
-                    Email = q.boardUser.Email,
-                    Title = q.boardUser.Title,
-                    AvatarURL = q.boardUser.AvatarURL,
-                    AccountLocked = q.boardUser.LockoutEnabled
-                })
-                .FirstOrDefaultAsync();
+        //    var companyUsers = await _dbContext.CompanyUsers
+        //        .Join(_dbContext.UserRoles,
+        //        cu => cu.UserId,
+        //        ur => ur.UserId,
+        //        (companyUser, userRole) => new
+        //        {
+        //            companyUser,
+        //            userRole
+        //        })
+        //        .Join(_dbContext.TBoardUsers,
+        //        combined => combined.companyUser.UserId,
+        //        boardUser => boardUser.Id,
+        //        (combined, boardUser) => new { combined, boardUser })
+        //        .Where(q =>
+        //            q.combined.companyUser.CompanyId == company.Id &&
+        //            q.combined.userRole.RoleId == companyOwnerRole.Id)
+        //        .Select(q => new CompanyUserDto()
+        //        {
+        //            CompanyId = q.combined.companyUser.CompanyId,
+        //            FirstName = q.boardUser.FirstName,
+        //            LastName = q.boardUser.LastName,
+        //            Email = q.boardUser.Email,
+        //            Title = q.boardUser.Title,
+        //            AvatarURL = q.boardUser.AvatarURL,
+        //            AccountLocked = q.boardUser.LockoutEnabled && q.boardUser.LockoutEnd > DateTime.Now
+        //        })
+        //        .FirstOrDefaultAsync();
 
-            return Ok(companyUsers);
-        }
+        //    return Ok(companyUsers);
+        //}
 
         [HttpGet("getCompanyUsers")]
         [ProducesResponseType(typeof(CompanyUserDto[]), 200)]
@@ -203,32 +203,66 @@ namespace t_board_backend.Controllers
             if (company == null) return NotFound(companyId);
 
             var companyUsers = await (from cu in _dbContext.CompanyUsers
-                                join u in _dbContext.TBoardUsers on cu.UserId equals u.Id
-                                join bu in _dbContext.BrandUsers on u.Id equals bu.UserId
-                                join b in _dbContext.Brands on bu.BrandId equals b.Id
-                                where cu.CompanyId == companyId
-                                select new CompanyUserDto()
-                                {
-                                    CompanyId = cu.CompanyId,
-                                    FirstName = u.FirstName,
-                                    LastName = u.LastName,
-                                    Email = u.Email,
-                                    Title = u.Title,
-                                    AvatarURL = u.AvatarURL,
-                                    AccountLocked = u.LockoutEnabled,
-                                    Brands = new BrandDto()
-                                    {
-                                        Id = b.Id,
-                                        CompanyId = b.CompanyId,
-                                        Name = b.Name,
-                                        LogoURL = b.LogoURL,
-                                        Keywords = b.Keywords,
-                                        Design = b.Design,
-                                        CreateDate = b.CreateDate,
-                                        UpdateDate = b.UpdateDate,
-                                    }
-                                })
+                                      join u in _dbContext.TBoardUsers on cu.UserId equals u.Id
+                                      where cu.CompanyId == companyId
+                                      select new CompanyUserDto()
+                                      {
+                                          CompanyId = cu.CompanyId,
+                                          FirstName = u.FirstName,
+                                          LastName = u.LastName,
+                                          Email = u.Email,
+                                          Title = u.Title,
+                                          AvatarURL = u.AvatarURL,
+                                          AccountLocked = u.LockoutEnabled && u.LockoutEnd > DateTime.Now
+                                      })
                                 .ToArrayAsync();
+
+            var companyBrands = await _dbContext.Brands
+                .Include(b => b.Boards)
+                .Where(b => b.CompanyId == companyId)
+                .ToArrayAsync();
+
+            foreach (var companyUser in companyUsers)
+            {
+                var user = await _userManager.FindByEmailAsync(companyUser.Email);
+
+                companyUser.IsCompanyOwner = await _userManager.IsInRoleAsync(user, "CompanyOwner");
+
+                var userBrandIds = await _dbContext.BrandUsers.Where(bu => bu.UserId == user.Id).Select(bu => bu.BrandId).ToArrayAsync();
+
+                var userBrands = companyBrands
+                    .Where(b => userBrandIds.Contains(b.Id));
+
+                companyUser.Brands = userBrands.Select(b => new BrandDto()
+                {
+                    Id = b.Id,
+                    Name = b.Name,
+                    LogoURL = b.LogoURL,
+                    CompanyId = b.CompanyId,
+                    Keywords = b.Keywords,
+                    Design = b.Design,
+                    CreateDate = b.CreateDate,
+                    UpdateDate = b.UpdateDate,
+                    Boards = userBrands
+                            .SelectMany(b =>
+                                b.Boards.Select(bo => new BoardDto()
+                                {
+                                    Id = bo.Id,
+                                    BrandId = bo.BrandId,
+                                    Name = bo.Name,
+                                    Description = bo.Description,
+                                    Status = bo.Status,
+                                    Design = bo.Design,
+                                    CreateDate = bo.CreateDate,
+                                    UpdateDate = bo.UpdateDate,
+                                    CreateUser = bo.CreateUser,
+                                    UpdateUser = bo.UpdateUser
+                                }))
+                            .ToArray()
+                })
+                .ToArray();
+
+            }
 
             return Ok(companyUsers);
         }
