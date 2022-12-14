@@ -85,9 +85,9 @@ namespace t_board.Services.Services
         {
             var user = await _userManager.FindByEmailAsync(email);
 
-            var lockDisabledResult = await _userManager.SetLockoutEnabledAsync(user, false);
-
             var setLockoutEndDateResult = await _userManager.SetLockoutEndDateAsync(user, DateTime.Now - TimeSpan.FromMinutes(1));
+
+            var lockDisabledResult = await _userManager.SetLockoutEnabledAsync(user, false);
 
             return setLockoutEndDateResult.Succeeded && lockDisabledResult.Succeeded;
         }

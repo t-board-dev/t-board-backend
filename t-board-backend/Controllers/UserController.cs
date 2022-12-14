@@ -100,8 +100,7 @@ namespace t_board_backend.Controllers
                 return Ok(userInfo);
             }
 
-            var isUserLocked = await _userService.IsUserLocked(user.Email);
-            if (isUserLocked) return Forbid("User locked!");
+            if (result.IsLockedOut) return new ObjectResult("User locked!") { StatusCode = 403 };
 
             return BadRequest("Check credentials!");
         }
@@ -118,7 +117,7 @@ namespace t_board_backend.Controllers
             var user = await _dbContext.TBoardUsers.FirstOrDefaultAsync(u => u.Id == userId);
 
             var isUserLocked = await _userService.IsUserLocked(user.Email);
-            if (isUserLocked) return Forbid("User locked!");
+            if (isUserLocked) return new ObjectResult("User locked!") { StatusCode = 403 };
 
             var userRoles = await _userManager.GetRolesAsync(user);
             var companyUser = await _dbContext.CompanyUsers.FirstOrDefaultAsync(cu => cu.UserId == user.Id);
