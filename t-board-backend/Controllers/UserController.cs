@@ -275,6 +275,8 @@ namespace t_board_backend.Controllers
                 if (confirmPhoneResult.Succeeded is false) return UnprocessableEntity(confirmPhoneResult.Errors);
             }
 
+            var userUnlocked = await _userService.UnlockUser(user.Email);
+
             invitation.IsConfirmed = true;
             invitation.ConfirmDate = DateTime.Now;
 
