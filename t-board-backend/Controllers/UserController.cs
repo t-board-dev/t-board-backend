@@ -100,7 +100,8 @@ namespace t_board_backend.Controllers
                 return Ok(userInfo);
             }
 
-            if (result.IsLockedOut) return Forbid("User locked!");
+            var isUserLocked = await _userService.IsUserLocked(user.Email);
+            if (isUserLocked) return Forbid("User locked!");
 
             return BadRequest("Check credentials!");
         }
@@ -115,6 +116,10 @@ namespace t_board_backend.Controllers
 
             var userId = await HttpContext.GetCurrentUserId();
             var user = await _dbContext.TBoardUsers.FirstOrDefaultAsync(u => u.Id == userId);
+
+            var isUserLocked = await _userService.IsUserLocked(user.Email);
+            if (isUserLocked) return Forbid("User locked!");
+
             var userRoles = await _userManager.GetRolesAsync(user);
             var companyUser = await _dbContext.CompanyUsers.FirstOrDefaultAsync(cu => cu.UserId == user.Id);
 
@@ -160,17 +165,17 @@ namespace t_board_backend.Controllers
         [HttpPost("lockUser")]
         public async Task<IActionResult> LockUser(string email)
         {
-            return await SetUserLockout(email, true);
+            return await SetUserLock(email, true);
         }
 
         [Authorize(Roles = "Admin, CompanyOwner")]
         [HttpPost("unlockUser")]
         public async Task<IActionResult> UnlockUser(string email)
         {
-            return await SetUserLockout(email, false);
+            return await SetUserLock(email, false);
         }
 
-        private async Task<IActionResult> SetUserLockout(string userEmail, bool locked)
+        private async Task<IActionResult> SetUserLock(string userEmail, bool locked)
         {
             var user = await _userManager.FindByEmailAsync(userEmail);
             if (user == null) return NotFound();
@@ -181,10 +186,18 @@ namespace t_board_backend.Controllers
 
             if (HttpContext.IsCurrentUserAdmin() is false && userIsAdminOrCompanyOwner) return Forbid();
 
-            var disabled = await _userManager.SetLockoutEnabledAsync(user, locked);
-            if (disabled.Succeeded is false) return UnprocessableEntity(disabled.Errors);
+            if (locked)
+            {
+                var userLocked = await _userService.LockUser(userEmail);
+                if (userLocked) return Ok();
 
-            return Ok();
+                return Problem("User could not locked!");
+            }
+
+            var userUnlocked = await _userService.UnlockUser(userEmail);
+            if (userUnlocked) return Ok();
+
+            return Problem("User could not unlock!");
         }
 
         [Authorize(Roles = "Admin")]
