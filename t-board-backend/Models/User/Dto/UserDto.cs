@@ -8,6 +8,7 @@
         public string Title { get; set; }
         public string PhoneNumber { get; set; }
         public string AvatarURL { get; set; }
+        public bool AccountLocked { get; set; }
         public string[] Roles { get; set; }
         public int? CompanyId { get; set; }
     }
