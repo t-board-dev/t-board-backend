@@ -15,7 +15,7 @@ using t_board_backend.Models.Company.Dto;
 
 namespace t_board_backend.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize]
     [Route("company/")]
     public class CompanyController : Controller
     {
@@ -37,6 +37,7 @@ namespace t_board_backend.Controllers
             _dbContext = dbContext;
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet("getCompanies")]
         [ProducesResponseType(typeof(CompanyDto[]), 200)]
         public async Task<IActionResult> GetCompanies()
@@ -84,10 +85,16 @@ namespace t_board_backend.Controllers
             return Ok(companies);
         }
 
+        [Authorize(Roles = "Admin, CompanyOwner")]
         [HttpGet("getCompany")]
         [ProducesResponseType(typeof(CompanyDto), 200)]
         public async Task<IActionResult> GetCompany(int companyId)
         {
+            var currentUserCompanyId = await HttpContext.GetCurrentUserCompanyId();
+            var isAdmin = HttpContext.IsCurrentUserAdmin();
+
+            if (isAdmin is false && companyId != currentUserCompanyId) return Forbid();
+
             var company = await _dbContext.Companies
                 .Include(c => c.Brands)
                 .ThenInclude(br => br.Boards)
@@ -134,6 +141,7 @@ namespace t_board_backend.Controllers
             return Ok(company);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet("getCompanyTypes")]
         [ProducesResponseType(typeof(CompanyTypeDto[]), 200)]
         public async Task<IActionResult> GetCompanyTypes()
@@ -274,6 +282,7 @@ namespace t_board_backend.Controllers
             return Ok(companyUsers);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("createCompany")]
         public async Task<IActionResult> CreateCompany([FromBody] CreateCompanyRequest createCompanyRequest)
         {
@@ -317,7 +326,8 @@ namespace t_board_backend.Controllers
 
             return Ok();
         }
-
+        
+        [Authorize(Roles = "Admin")]
         [HttpPost("updateCompany")]
         public async Task<IActionResult> UpdateCompany([FromBody] CompanyDto companyDto)
         {
