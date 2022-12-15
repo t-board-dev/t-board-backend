@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using t_board.Entity;
 using t_board.Services.Contracts;
+using t_board_backend.Extensions;
 using t_board_backend.Models.Board.Dto;
 using t_board_backend.Models.Brand.Dto;
 using t_board_backend.Models.Company;
@@ -191,11 +192,16 @@ namespace t_board_backend.Controllers
 
         //    return Ok(companyUsers);
         //}
-
+        
+        [Authorize(Roles = "Admin, CompanyOwner")]
         [HttpGet("getCompanyUsers")]
         [ProducesResponseType(typeof(CompanyUserDto[]), 200)]
         public async Task<IActionResult> GetCompanyUsers(int companyId)
         {
+            var currentUserCompanyId = await HttpContext.GetCurrentUserCompanyId();
+
+            if (companyId != currentUserCompanyId) return Forbid();
+
             var company = await _dbContext.Companies
                 .Where(c => c.Id == companyId)
                 .FirstOrDefaultAsync();
