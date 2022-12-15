@@ -199,8 +199,9 @@ namespace t_board_backend.Controllers
         public async Task<IActionResult> GetCompanyUsers(int companyId)
         {
             var currentUserCompanyId = await HttpContext.GetCurrentUserCompanyId();
+            var isAdmin = HttpContext.IsCurrentUserAdmin();
 
-            if (companyId != currentUserCompanyId) return Forbid();
+            if (isAdmin is false && companyId != currentUserCompanyId) return Forbid();
 
             var company = await _dbContext.Companies
                 .Where(c => c.Id == companyId)
