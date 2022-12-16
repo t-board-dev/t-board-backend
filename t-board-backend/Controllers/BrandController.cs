@@ -235,10 +235,12 @@ namespace t_board_backend.Controllers
             return Ok(brands);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, CompanyOwner")]
         [HttpPost("createBrand")]
         public async Task<IActionResult> CreateBrand([FromBody] CreateBrandRequest createBrandRequest)
         {
+            var isCurrentUserAdmin = HttpContext.IsCurrentUserAdmin();
+
             var brand = new Brand
             {
                 CompanyId = createBrandRequest.CompanyId,
@@ -252,6 +254,19 @@ namespace t_board_backend.Controllers
             await _dbContext.Brands.AddAsync(brand);
             var brandCreated = await _dbContext.SaveChangesAsync();
             if (brandCreated is 0) return UnprocessableEntity(createBrandRequest);
+
+            if (isCurrentUserAdmin is false)
+            {
+                var userId = await HttpContext.GetCurrentUserId();
+                var brandUser = new BrandUser()
+                {
+                    UserId = userId,
+                    BrandId = brand.Id
+                };
+
+                await _dbContext.BrandUsers.AddAsync(brandUser);
+                _ = await _dbContext.SaveChangesAsync();
+            }
 
             return Ok();
         }
