@@ -12,7 +12,6 @@ using t_board_backend.Models.Board.Dto;
 
 namespace t_board_backend.Controllers
 {
-    [Authorize]
     [Route("board/")]
     public class BoardController : Controller
     {
@@ -28,7 +27,7 @@ namespace t_board_backend.Controllers
         [ProducesResponseType(typeof(BoardDto), 200)]
         public async Task<IActionResult> GetBoard([FromQuery] int boardId)
         {
-            var currentUser = await HttpContext.GetCurrentUserId();
+            //var currentUser = await HttpContext.GetCurrentUserId();
 
             var board = await _dbContext.Boards
                 .Where(b => b.Id == boardId)
@@ -49,30 +48,30 @@ namespace t_board_backend.Controllers
 
             if (board == null) return NotFound();
 
-            var brandUser = await _dbContext.BrandUsers
-                .Where(u =>
-                    u.UserId == currentUser &&
-                    u.BrandId == board.BrandId)
-                .FirstOrDefaultAsync();
+            //var brandUser = await _dbContext.BrandUsers
+            //    .Where(u =>
+            //        u.UserId == currentUser &&
+            //        u.BrandId == board.BrandId)
+            //    .FirstOrDefaultAsync();
 
-            if (brandUser == null) return Forbid();
+            //if (brandUser == null) return Forbid();
 
             return Ok(board);
         }
 
+        [Authorize]
         [HttpGet("getBrandBoards")]
         [ProducesResponseType(typeof(BoardDto[]), 200)]
         public async Task<IActionResult> GetBrandBoards([FromQuery] int brandId)
         {
+            var isCurrentUserAdmin = HttpContext.IsCurrentUserAdmin();
             var currentUser = await HttpContext.GetCurrentUserId();
 
-            var brandUser = await _dbContext.BrandUsers
-                .Where(u =>
-                    u.UserId == currentUser &&
-                    u.BrandId == brandId)
-                .FirstOrDefaultAsync();
-
-            if (brandUser == null) return NotFound();
+            if (isCurrentUserAdmin is false)
+            {
+                var brandUser = await _dbContext.BrandUsers.Where(u => u.UserId == currentUser && u.BrandId == brandId).FirstOrDefaultAsync();
+                if (brandUser == null) return NotFound();
+            }
 
             var boards = await _dbContext.Boards
                 .Where(b => b.BrandId == brandId)
@@ -103,15 +102,15 @@ namespace t_board_backend.Controllers
                 .Include(b => b.BoardItems)
                 .FirstOrDefaultAsync();
 
-            var currentUser = await HttpContext.GetCurrentUserId();
+            //var currentUser = await HttpContext.GetCurrentUserId();
 
-            var brandUser = await _dbContext.BrandUsers
-                .Where(u =>
-                    u.UserId == currentUser &&
-                    u.BrandId == board.BrandId)
-                .FirstOrDefaultAsync();
+            //var brandUser = await _dbContext.BrandUsers
+            //    .Where(u =>
+            //        u.UserId == currentUser &&
+            //        u.BrandId == board.BrandId)
+            //    .FirstOrDefaultAsync();
 
-            if (brandUser == null) return NotFound();
+            //if (brandUser == null) return NotFound();
 
             var boardItems = board.BoardItems
                 .Where(b => b.BoardId == boardId)
@@ -150,13 +149,18 @@ namespace t_board_backend.Controllers
             return Ok(boardItemTypes);
         }
 
+        [Authorize]
         [HttpPost("createBoard")]
         public async Task<IActionResult> CreateBoard([FromBody] CreateBoardRequest createBoardRequest)
         {
+            var isCurrentUserAdmin = HttpContext.IsCurrentUserAdmin();
             var currentUser = await HttpContext.GetCurrentUserId();
 
-            var brandUser = await _dbContext.BrandUsers.Where(u => u.UserId == currentUser && u.BrandId == createBoardRequest.BrandId).FirstOrDefaultAsync();
-            if (brandUser == null) return Forbid();
+            if (isCurrentUserAdmin is false)
+            {
+                var brandUser = await _dbContext.BrandUsers.Where(u => u.UserId == currentUser && u.BrandId == createBoardRequest.BrandId).FirstOrDefaultAsync();
+                if (brandUser == null) return Forbid();
+            }
 
             var newBoard = new Board()
             {
@@ -175,16 +179,21 @@ namespace t_board_backend.Controllers
             return Ok();
         }
 
+        [Authorize]
         [HttpPost("updateBoard")]
         public async Task<IActionResult> UpdateBoard([FromBody] BoardDto boardDto)
         {
+            var isCurrentUserAdmin = HttpContext.IsCurrentUserAdmin();
             var currentUser = await HttpContext.GetCurrentUserId();
 
             var board = await _dbContext.Boards.Where(b => b.Id == boardDto.Id).FirstOrDefaultAsync();
             if (board == null) return NotFound(boardDto);
 
-            var brandUser = await _dbContext.BrandUsers.Where(u => u.UserId == currentUser && u.BrandId == board.BrandId).FirstOrDefaultAsync();
-            if (brandUser == null) return Forbid();
+            if (isCurrentUserAdmin is false)
+            {
+                var brandUser = await _dbContext.BrandUsers.Where(u => u.UserId == currentUser && u.BrandId == board.BrandId).FirstOrDefaultAsync();
+                if (brandUser == null) return Forbid();
+            }
 
             board.Name = boardDto.Name;
             board.Description = boardDto.Description;
@@ -201,11 +210,13 @@ namespace t_board_backend.Controllers
             return Ok();
         }
 
+        [Authorize]
         [HttpPost("updateBoardItems")]
         public async Task<IActionResult> UpdateBoardItems([FromBody] BoardItemDto[] boardItems)
         {
             try
             {
+                var isCurrentUserAdmin = HttpContext.IsCurrentUserAdmin();
                 var currentUser = await HttpContext.GetCurrentUserId();
 
                 foreach (var boardItem in boardItems)
@@ -213,8 +224,11 @@ namespace t_board_backend.Controllers
                     var board = await _dbContext.Boards.Where(b => b.Id == boardItem.BoardId).FirstOrDefaultAsync();
                     if (board == null) BadRequest("Board could not found!");
 
-                    var brandUser = await _dbContext.BrandUsers.Where(u => u.UserId == currentUser && u.BrandId == board.BrandId).FirstOrDefaultAsync();
-                    if (brandUser == null) return Forbid();
+                    if (isCurrentUserAdmin is false)
+                    {
+                        var brandUser = await _dbContext.BrandUsers.Where(u => u.UserId == currentUser && u.BrandId == board.BrandId).FirstOrDefaultAsync();
+                        if (brandUser == null) return Forbid();
+                    }
 
                     var type = await _dbContext.BoardItemTypes.Where(t => t.Id == boardItem.Type).FirstOrDefaultAsync();
                     if (type == null) BadRequest($"Board item type could not found!");
