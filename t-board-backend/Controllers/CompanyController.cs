@@ -91,9 +91,9 @@ namespace t_board_backend.Controllers
         public async Task<IActionResult> GetCompany(int companyId)
         {
             var currentUserCompanyId = await HttpContext.GetCurrentUserCompanyId();
-            var isAdmin = HttpContext.IsCurrentUserAdmin();
+            var isCurrentUserAdmin = HttpContext.IsCurrentUserAdmin();
 
-            if (isAdmin is false && companyId != currentUserCompanyId) return Forbid();
+            if (isCurrentUserAdmin is false && companyId != currentUserCompanyId) return Forbid();
 
             var company = await _dbContext.Companies
                 .Include(c => c.Brands)
@@ -207,9 +207,9 @@ namespace t_board_backend.Controllers
         public async Task<IActionResult> GetCompanyUsers(int companyId)
         {
             var currentUserCompanyId = await HttpContext.GetCurrentUserCompanyId();
-            var isAdmin = HttpContext.IsCurrentUserAdmin();
+            var isCurrentUserAdmin = HttpContext.IsCurrentUserAdmin();
 
-            if (isAdmin is false && companyId != currentUserCompanyId) return Forbid();
+            if (isCurrentUserAdmin is false && companyId != currentUserCompanyId) return Forbid();
 
             var company = await _dbContext.Companies
                 .Where(c => c.Id == companyId)
