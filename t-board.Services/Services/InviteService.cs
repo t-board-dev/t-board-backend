@@ -48,7 +48,7 @@ namespace t_board.Services.Services
             await _mailService.SendMail(new MailModel()
             {
                 Subject = "T-Board Invitation",
-                Body = invitation.InviteCode,
+                Body = "https://board-demo.vercel.app/set-password?inviteCode=" + invitation.InviteCode,
                 To = userEmail
             },
             false);
