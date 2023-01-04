@@ -255,18 +255,39 @@ namespace t_board_backend.Controllers
             var brandCreated = await _dbContext.SaveChangesAsync();
             if (brandCreated is 0) return UnprocessableEntity(createBrandRequest);
 
+            var brandUser = new BrandUser();
             if (isCurrentUserAdmin is false)
             {
                 var userId = await HttpContext.GetCurrentUserId();
-                var brandUser = new BrandUser()
-                {
-                    UserId = userId,
-                    BrandId = brand.Id
-                };
 
-                await _dbContext.BrandUsers.AddAsync(brandUser);
-                _ = await _dbContext.SaveChangesAsync();
+                brandUser.UserId = userId;
+                brandUser.BrandId = brand.Id;
             }
+            else
+            {
+                var ownerRole = await _dbContext.Roles.Where(r => r.NormalizedName == "COMPANYOWNER").FirstOrDefaultAsync();
+                var companyOwnerOfBrandsCompany = await _dbContext.CompanyUsers
+                    .Join(
+                        _dbContext.UserRoles,
+                        cu => cu.UserId,
+                        ur => ur.UserId,
+                        (cu, ur) => new
+                        {
+                            UserId = cu.UserId,
+                            CompanyId = cu.CompanyId,
+                            UserRoleId = ur.RoleId
+                        })
+                    .Where(q =>
+                        q.CompanyId == createBrandRequest.CompanyId &&
+                        q.UserRoleId == ownerRole.Id)
+                    .FirstOrDefaultAsync();
+
+                brandUser.UserId = companyOwnerOfBrandsCompany.UserId;
+                brandUser.BrandId = brand.Id;
+            }
+
+            await _dbContext.BrandUsers.AddAsync(brandUser);
+            _ = await _dbContext.SaveChangesAsync();
 
             return Ok();
         }
