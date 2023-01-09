@@ -51,26 +51,25 @@ namespace t_board_backend.Controllers
                 expression = b => b.CompanyId == companyId;
             }
 
-            var brandsQuery = _dbContext.Brands
+            var companyBrands = _dbContext.Brands
                 .Include(b => b.Boards)
                 .AsQueryable()
-                .Where(expression);
+                .Where(expression)
+                .ToList();
 
             if (isCurrentUserAdmin is false)
             {
                 var userId = await HttpContext.GetCurrentUserId();
 
-                brandsQuery
-                     .Join(_dbContext.BrandUsers,
-                         brand => brand.Id,
-                         brandUser => brandUser.BrandId,
-                         (brand, brandUser) => new { brand, brandUser })
-                     .Where(q =>
-                         q.brandUser.UserId == userId)
-                     .Select(q => q.brand);
+                var authorizedBrands = await _dbContext.BrandUsers
+                    .Where(q => q.UserId == userId)
+                    .Select(q => q.BrandId)
+                    .ToListAsync();
+
+                companyBrands = companyBrands.Where(b => authorizedBrands.Contains(b.Id)).ToList();
             }
 
-            var brands = await brandsQuery
+            var brands = companyBrands
                 .Select(br => new BrandDto()
                 {
                     Id = br.Id,
@@ -94,7 +93,7 @@ namespace t_board_backend.Controllers
                         CreateUser = bo.CreateUser,
                         UpdateUser = bo.UpdateUser
                     }).ToArray()
-                }).ToArrayAsync();
+                }).ToArray();
 
             return Ok(brands);
         }
