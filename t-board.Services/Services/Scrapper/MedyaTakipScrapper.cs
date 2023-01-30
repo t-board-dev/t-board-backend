@@ -13,7 +13,7 @@ namespace t_board.Services.Services.Scrapper
 
         }
 
-        public IScrappedModel Scrap(string url)
+        public IScrappedModel Scrape(string url)
         {
             if (url.Contains("clips.medyatakip.com") is false)
                 throw new Exception("URL is not recognized!");
@@ -22,15 +22,15 @@ namespace t_board.Services.Services.Scrapper
             var doc = web.Load(url);
 
             if (url.Contains("/pm/clip/"))
-                return ScrapYaziliBasin(doc);
+                return ScrapeYaziliBasin(doc);
 
             if (url.Contains("/dm/clip/"))
-                return ScrapOnlineBasin(doc);
+                return ScrapeOnlineBasin(doc);
 
             throw new Exception("URL could not scrapped!");
         }
 
-        private MedyaTakipOnlineBasinModel ScrapOnlineBasin(HtmlDocument doc)
+        private MedyaTakipOnlineBasinModel ScrapeOnlineBasin(HtmlDocument doc)
         {
             var titleNode = doc.DocumentNode.SelectSingleNode("//*[@id='nav-tabContent']/div/center/h4");
             var dateNode = doc.DocumentNode.SelectSingleNode("//html/body/div/div[1]/div/div[1]/div/div/div/div/div[1]/div[2]/div");
@@ -48,7 +48,7 @@ namespace t_board.Services.Services.Scrapper
             return model;
         }
 
-        private MedyaTakipYaziliBasinModel ScrapYaziliBasin(HtmlDocument doc)
+        private MedyaTakipYaziliBasinModel ScrapeYaziliBasin(HtmlDocument doc)
         {
             var keywordNodes = doc.DocumentNode.SelectNodes("//*[@id='words']/div/*[@class='brandName']/a");
 

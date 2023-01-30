@@ -10,7 +10,7 @@ namespace t_board.Services.Services.Scrapper
         {
         }
 
-        public IScrappedModel Scrap(string url)
+        public IScrappedModel Scrape(string url)
         {
             if (url.Contains("gold.ajanspress.com.tr") is false)
                 throw new Exception("URL is not recognized!");
@@ -19,18 +19,18 @@ namespace t_board.Services.Services.Scrapper
             var doc = web.Load(url);
 
             if (url.Contains("/linki/"))
-                return ScrapOnlineBasin(doc);
+                return ScrapeOnlineBasin(doc);
 
             if (url.Contains("/popuptv/"))
-                return ScrapTV(doc);
+                return ScrapeTV(doc);
 
             if (url.Contains("/linkpress/"))
-                return ScrapYaziliBasin(doc);
+                return ScrapeYaziliBasin(doc);
 
             throw new Exception("Content could not scrapped!");
         }
 
-        private AjansPressOnlineBasinModel ScrapOnlineBasin(HtmlDocument doc)
+        private AjansPressOnlineBasinModel ScrapeOnlineBasin(HtmlDocument doc)
         {
             var titleNode = doc.DocumentNode.SelectSingleNode("//*[@id='wrapperpin']/div/div[1]/div[1]/h1");
             var contentNode = doc.DocumentNode.SelectSingleNode("//*[@id='collapsibleContent']");
@@ -60,7 +60,7 @@ namespace t_board.Services.Services.Scrapper
             }
         }
 
-        private AjansPressTVModel ScrapTV(HtmlDocument doc)
+        private AjansPressTVModel ScrapeTV(HtmlDocument doc)
         {
             var titleNode = doc.DocumentNode.SelectSingleNode("//*[@id='wrapperpin']/div/section[1]/div/div/div[3]");
             var contentNode = doc.DocumentNode.SelectSingleNode("//*[@id='pageHeaderTable']");
@@ -87,7 +87,7 @@ namespace t_board.Services.Services.Scrapper
             }
         }
 
-        private AjansPressYaziliBasinModel ScrapYaziliBasin(HtmlDocument doc)
+        private AjansPressYaziliBasinModel ScrapeYaziliBasin(HtmlDocument doc)
         {
             var titleNode = doc.DocumentNode.SelectSingleNode("//*[@id='wrapperpin']/div/div[1]/div[1]/h1");
             var contentNode = doc.DocumentNode.SelectSingleNode("//*[@id='pageHeaderTable']");

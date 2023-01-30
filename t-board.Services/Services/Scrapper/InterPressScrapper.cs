@@ -15,7 +15,7 @@ namespace t_board.Services.Services.Scrapper
 
         }
 
-        public IScrappedModel Scrap(string url)
+        public IScrappedModel Scrape(string url)
         {
             var options = new ChromeOptions();
 
@@ -33,20 +33,20 @@ namespace t_board.Services.Services.Scrapper
 
             var videoNode = doc.DocumentNode.SelectSingleNode("//*[@id='singleVideo']");
             if (videoNode != null)
-                return ScrapTv(doc);
+                return ScrapeTV(doc);
 
             var imageNode = doc.DocumentNode.SelectSingleNode("//*[@id='imageMain']");
             if (imageNode != null)
-                return ScrapYaziliBasin(doc);
+                return ScrapeYaziliBasin(doc);
 
             var iframeNode = doc.DocumentNode.SelectSingleNode("//*[@id='iframe']");
             if (iframeNode != null)
-                return ScrapOnlineBasin(doc);
+                return ScrapeOnlineBasin(doc);
 
             throw new Exception("Content could not scrapped!");
         }
 
-        private InterPressOnlineBasinModel ScrapOnlineBasin(HtmlDocument doc)
+        private InterPressOnlineBasinModel ScrapeOnlineBasin(HtmlDocument doc)
         {
             var contentNode = doc.DocumentNode.SelectSingleNode("//*[@id='supportedContent']/app-root/doc-viewer-tab/div/div[2]/app-doc-viewer/app-doc-strem-container/div/div[1]/div[1]/app-doc-meta-data");
 
@@ -69,7 +69,7 @@ namespace t_board.Services.Services.Scrapper
             };
         }
 
-        private InterPressYaziliBasinModel ScrapYaziliBasin(HtmlDocument doc)
+        private InterPressYaziliBasinModel ScrapeYaziliBasin(HtmlDocument doc)
         {
             var contentNode = doc.DocumentNode.SelectSingleNode("//*[@id='supportedContent']/app-root/doc-viewer-tab/div/div[2]/app-doc-viewer/app-doc-strem-container/div/div[1]/div[1]/app-doc-meta-data");
 
@@ -98,7 +98,7 @@ namespace t_board.Services.Services.Scrapper
             };
         }
 
-        private InterPressTvModel ScrapTv(HtmlDocument doc)
+        private InterPressTvModel ScrapeTV(HtmlDocument doc)
         {
             var contentNode = doc.DocumentNode.SelectSingleNode("//*[@id='supportedContent']/app-root/doc-viewer-tab/div/div[2]/app-doc-viewer/app-doc-strem-container/div/div[1]/div[1]/app-doc-meta-data");
 
