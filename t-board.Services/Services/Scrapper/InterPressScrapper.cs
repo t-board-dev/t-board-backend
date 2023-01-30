@@ -17,6 +17,12 @@ namespace t_board.Services.Services.Scrapper
 
         public IScrappedModel Scrape(string url)
         {
+            if (Helpers.Validator.IsValidUri(url) is false)
+                throw new ArgumentException("URL is not valid. Content could not scrapped.");
+
+            if (url.Contains("web.interpress.com") is false)
+                throw new ArgumentException("URL is not valid. Content could not scrapped.");
+
             var options = new ChromeOptions();
 
             options.AddArguments("headless");
@@ -43,7 +49,7 @@ namespace t_board.Services.Services.Scrapper
             if (iframeNode != null)
                 return ScrapeOnlineBasin(doc);
 
-            throw new Exception("Content could not scrapped!");
+            throw new ArgumentException("URL is not valid. Content could not scrapped.");
         }
 
         private InterPressOnlineBasinModel ScrapeOnlineBasin(HtmlDocument doc)

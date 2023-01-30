@@ -12,8 +12,11 @@ namespace t_board.Services.Services.Scrapper
 
         public IScrappedModel Scrape(string url)
         {
+            if (Helpers.Validator.IsValidUri(url) is false)
+                throw new ArgumentException("URL is not valid. Content could not scrapped.");
+
             if (url.Contains("gold.ajanspress.com.tr") is false)
-                throw new Exception("URL is not recognized!");
+                throw new ArgumentException("URL is not valid. Content could not scrapped.");
 
             var web = new HtmlWeb();
             var doc = web.Load(url);
@@ -27,7 +30,7 @@ namespace t_board.Services.Services.Scrapper
             if (url.Contains("/linkpress/"))
                 return ScrapeYaziliBasin(doc);
 
-            throw new Exception("Content could not scrapped!");
+            throw new ArgumentException("URL is not valid. Content could not scrapped.");
         }
 
         private AjansPressOnlineBasinModel ScrapeOnlineBasin(HtmlDocument doc)
