@@ -8,4 +8,6 @@
     public interface IScrappedModel
     {
     }
+
+    public delegate IScrapper ServiceResolver(string key);
 }
