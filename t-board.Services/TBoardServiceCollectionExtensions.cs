@@ -10,6 +10,7 @@ namespace t_board.Services
     {
         public static IServiceCollection AddTBoardServices(this IServiceCollection services)
         {
+            services.AddScoped<IMailService, MailService>();
             services.AddScoped<IInviteService, InviteService>();
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IUserService, UserService>();
