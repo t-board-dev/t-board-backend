@@ -16,9 +16,9 @@ namespace t_board.Services
             services.AddScoped<IUserService, UserService>();
 
             // Scrapper
-            services.AddScoped<IScrapper, AjansPressScrapper>();
-            services.AddScoped<IScrapper, InterPressScrapper>();
-            services.AddScoped<IScrapper, MedyaTakipScrapper>();
+            services.AddScoped<AjansPressScrapper>();
+            services.AddScoped<InterPressScrapper>();
+            services.AddScoped<MedyaTakipScrapper>();
 
             services.AddScoped<ServiceResolver>(serviceProvider => key =>
             {
