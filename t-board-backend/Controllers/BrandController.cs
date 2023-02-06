@@ -295,15 +295,21 @@ namespace t_board_backend.Controllers
         [HttpPost("createBrandUser")]
         public async Task<IActionResult> CreateBrandUser([FromBody] CreateBrandUserRequest createBrandUserRequest)
         {
+            if (HttpContext.IsCurrentUserAdmin() is false)
+            {
             var companyId = await HttpContext.GetCurrentUserCompanyId();
+                if (companyId != createBrandUserRequest.CompanyId) return NotFound("Company not found: " + createBrandUserRequest.CompanyId);
+
+                var brands = await _dbContext.Brands
+                        .Where(b => 
+                            createBrandUserRequest.BrandIds.Contains(b.Id) && 
+                            b.CompanyId == companyId)
+                        .ToListAsync();
 
             foreach (var brandId in createBrandUserRequest.BrandIds)
             {
-                var brand = await _dbContext.Brands
-                    .Where(b => b.Id == brandId && b.CompanyId == companyId)
-                    .FirstOrDefaultAsync();
-
-                if (brand == null) return NotFound(brandId);
+                    if (brands.FirstOrDefault(b => b.Id == brandId) == null) return NotFound("Brand not found: " + brandId);
+            }
             }
 
             var user = new TBoardUser
@@ -332,7 +338,7 @@ namespace t_board_backend.Controllers
 
             var companyUser = new CompanyUser
             {
-                CompanyId = await HttpContext.GetCurrentUserCompanyId(),
+                CompanyId = createBrandUserRequest.CompanyId,
                 UserId = user.Id
             };
 
