@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace t_board_backend.Models.Brand
 {
-    public class AssignBrandUserRequest
+    public class UpdateBrandUserRequest
     {
         [Required]
         [JsonProperty("companyId")]
