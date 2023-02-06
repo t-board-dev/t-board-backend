@@ -297,7 +297,7 @@ namespace t_board_backend.Controllers
         {
             if (HttpContext.IsCurrentUserAdmin() is false)
             {
-            var companyId = await HttpContext.GetCurrentUserCompanyId();
+                var companyId = await HttpContext.GetCurrentUserCompanyId();
                 if (companyId != createBrandUserRequest.CompanyId) return NotFound("Company not found: " + createBrandUserRequest.CompanyId);
 
                 var brands = await _dbContext.Brands
@@ -306,10 +306,10 @@ namespace t_board_backend.Controllers
                             b.CompanyId == companyId)
                         .ToListAsync();
 
-            foreach (var brandId in createBrandUserRequest.BrandIds)
-            {
+                foreach (var brandId in createBrandUserRequest.BrandIds)
+                {
                     if (brands.FirstOrDefault(b => b.Id == brandId) == null) return NotFound("Brand not found: " + brandId);
-            }
+                }
             }
 
             var user = new TBoardUser
@@ -370,6 +370,44 @@ namespace t_board_backend.Controllers
 
             var brandUpdated = await _dbContext.SaveChangesAsync();
             if (brandUpdated is 0) return Problem("Brand could not updated!");
+
+            return Ok();
+        }
+
+        [Authorize(Roles = "Admin, CompanyOwner")]
+        [HttpPost("assignBrandUser")]
+        public async Task<IActionResult> AssignBrandUser([FromBody] AssignBrandUserRequest assignBrandUserRequest)
+        {
+            if (HttpContext.IsCurrentUserAdmin() is false)
+            {
+                var companyId = await HttpContext.GetCurrentUserCompanyId();
+                if (companyId != assignBrandUserRequest.CompanyId) return NotFound("Company not found: " + assignBrandUserRequest.CompanyId);
+
+                var brands = await _dbContext.Brands
+                        .Where(b => 
+                            assignBrandUserRequest.BrandIds.Contains(b.Id) && 
+                            b.CompanyId == companyId)
+                        .ToListAsync();
+
+                foreach (var brandId in assignBrandUserRequest.BrandIds)
+                {
+                    if (brands.FirstOrDefault(b => b.Id == brandId) == null) return NotFound("Brand not found: " + brandId);
+                }
+            }
+
+            foreach (var brandId in assignBrandUserRequest.BrandIds)
+            {
+                var brandUser = new BrandUser
+                {
+                    BrandId = brandId,
+                    UserId = assignBrandUserRequest.UserId
+                };
+
+                await _dbContext.BrandUsers.AddAsync(brandUser);
+            }
+
+            var brandUserCreated = await _dbContext.SaveChangesAsync();
+            if (brandUserCreated is 0) return UnprocessableEntity("User could not assigned!");
 
             return Ok();
         }
