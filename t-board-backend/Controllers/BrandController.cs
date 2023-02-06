@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -300,15 +301,16 @@ namespace t_board_backend.Controllers
                 var companyId = await HttpContext.GetCurrentUserCompanyId();
                 if (companyId != createBrandUserRequest.CompanyId) return NotFound("Company not found: " + createBrandUserRequest.CompanyId);
 
-                var brands = await _dbContext.Brands
-                        .Where(b => 
-                            createBrandUserRequest.BrandIds.Contains(b.Id) && 
+                var companyBrands = await _dbContext.Brands
+                        .AsNoTracking()
+                        .Where(b =>
                             b.CompanyId == companyId)
+                        .Select(b => b.Id)
                         .ToListAsync();
 
                 foreach (var brandId in createBrandUserRequest.BrandIds)
                 {
-                    if (brands.FirstOrDefault(b => b.Id == brandId) == null) return NotFound("Brand not found: " + brandId);
+                    if (companyBrands.Contains(brandId) is false) return NotFound("Brand not found: " + brandId);
                 }
             }
 
@@ -375,32 +377,46 @@ namespace t_board_backend.Controllers
         }
 
         [Authorize(Roles = "Admin, CompanyOwner")]
-        [HttpPost("assignBrandUser")]
-        public async Task<IActionResult> AssignBrandUser([FromBody] AssignBrandUserRequest assignBrandUserRequest)
+        [HttpPost("updateBrandUser")]
+        public async Task<IActionResult> UpdateBrandUser([FromBody] UpdateBrandUserRequest updateBrandUserRequest)
         {
             if (HttpContext.IsCurrentUserAdmin() is false)
             {
                 var companyId = await HttpContext.GetCurrentUserCompanyId();
-                if (companyId != assignBrandUserRequest.CompanyId) return NotFound("Company not found: " + assignBrandUserRequest.CompanyId);
+                if (companyId != updateBrandUserRequest.CompanyId) return NotFound("Company not found: " + updateBrandUserRequest.CompanyId);
 
-                var brands = await _dbContext.Brands
-                        .Where(b => 
-                            assignBrandUserRequest.BrandIds.Contains(b.Id) && 
+                var companyBrands = await _dbContext.Brands
+                        .AsNoTracking()
+                        .Where(b =>
                             b.CompanyId == companyId)
+                        .Select(b => b.Id)
                         .ToListAsync();
 
-                foreach (var brandId in assignBrandUserRequest.BrandIds)
+                foreach (var brandId in updateBrandUserRequest.BrandIds)
                 {
-                    if (brands.FirstOrDefault(b => b.Id == brandId) == null) return NotFound("Brand not found: " + brandId);
+                    if (companyBrands.Contains(brandId) is false) return NotFound("Brand not found: " + brandId);
                 }
             }
 
-            foreach (var brandId in assignBrandUserRequest.BrandIds)
+            var currentBrandUsers = await _dbContext.BrandUsers
+                .Where(u =>
+                    u.UserId == updateBrandUserRequest.UserId)
+                .ToListAsync();
+
+            var oldBrandUsers = currentBrandUsers
+                .Where(u => updateBrandUserRequest.BrandIds.Contains(u.BrandId) is false);
+
+            _dbContext.BrandUsers.RemoveRange(oldBrandUsers);
+
+            var newBrandIds = updateBrandUserRequest.BrandIds
+                .Where(id => currentBrandUsers.Select(u => u.BrandId).Contains(id) is false);
+
+            foreach (var brandId in newBrandIds)
             {
                 var brandUser = new BrandUser
                 {
                     BrandId = brandId,
-                    UserId = assignBrandUserRequest.UserId
+                    UserId = updateBrandUserRequest.UserId
                 };
 
                 await _dbContext.BrandUsers.AddAsync(brandUser);
