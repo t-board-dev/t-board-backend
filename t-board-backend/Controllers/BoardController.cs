@@ -6,6 +6,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using t_board.Entity;
+using t_board.Helpers;
 using t_board_backend.Extensions;
 using t_board_backend.Models.Board;
 using t_board_backend.Models.Board.Dto;
@@ -62,7 +63,7 @@ namespace t_board_backend.Controllers
         [Authorize]
         [HttpGet("getBrandBoards")]
         [ProducesResponseType(typeof(BoardDto[]), 200)]
-        public async Task<IActionResult> GetBrandBoards([FromQuery] int brandId)
+        public async Task<IActionResult> GetBrandBoards([FromQuery] int brandId, int pageIndex, int pageSize)
         {
             var isCurrentUserAdmin = HttpContext.IsCurrentUserAdmin();
             var currentUser = await HttpContext.GetCurrentUserId();
@@ -73,7 +74,7 @@ namespace t_board_backend.Controllers
                 if (brandUser == null) return NotFound();
             }
 
-            var boards = await _dbContext.Boards
+            var boardsQuery = _dbContext.Boards
                 .Where(b => b.BrandId == brandId)
                 .Select(b => new BoardDto()
                 {
@@ -87,10 +88,18 @@ namespace t_board_backend.Controllers
                     UpdateDate = b.UpdateDate,
                     CreateUser = b.CreateUser,
                     UpdateUser = b.UpdateUser
-                })
-                .ToArrayAsync();
+                });
 
-            return Ok(boards);
+            var boards = await PaginatedList<BoardDto>.CreateAsync(boardsQuery, pageIndex, pageSize);
+
+            return Ok(new
+            {
+                PageIndex = boards.PageIndex,
+                PageCount = boards.TotalPages,
+                HasNextPage = boards.HasNextPage,
+                HasPreviousPage = boards.HasPreviousPage,
+                Result = boards
+            });
         }
 
         [HttpGet("getBoardItems")]

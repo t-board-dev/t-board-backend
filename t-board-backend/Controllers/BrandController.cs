@@ -8,6 +8,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using t_board.Entity;
+using t_board.Helpers;
 using t_board.Services.Contracts;
 using t_board_backend.Extensions;
 using t_board_backend.Models.Board.Dto;
@@ -40,7 +41,7 @@ namespace t_board_backend.Controllers
 
         [HttpGet("getBrands")]
         [ProducesResponseType(typeof(BrandDto[]), 200)]
-        public async Task<IActionResult> GetBrands()
+        public async Task<IActionResult> GetBrands([FromQuery] int pageIndex, int pageSize)
         {
             var isCurrentUserAdmin = HttpContext.IsCurrentUserAdmin();
 
@@ -49,28 +50,21 @@ namespace t_board_backend.Controllers
             if (isCurrentUserAdmin is false)
             {
                 var companyId = await HttpContext.GetCurrentUserCompanyId();
-                expression = b => b.CompanyId == companyId;
-            }
-
-            var companyBrands = _dbContext.Brands
-                .Include(b => b.Boards)
-                .AsQueryable()
-                .Where(expression)
-                .ToList();
-
-            if (isCurrentUserAdmin is false)
-            {
+                
                 var userId = await HttpContext.GetCurrentUserId();
 
                 var authorizedBrands = await _dbContext.BrandUsers
                     .Where(q => q.UserId == userId)
                     .Select(q => q.BrandId)
                     .ToListAsync();
-
-                companyBrands = companyBrands.Where(b => authorizedBrands.Contains(b.Id)).ToList();
+                
+                expression = b => b.CompanyId == companyId && authorizedBrands.Contains(b.Id);
             }
 
-            var brands = companyBrands
+            var companyBrandsQuery = _dbContext.Brands
+                .Include(b => b.Boards)
+                .AsQueryable()
+                .Where(expression)
                 .Select(br => new BrandDto()
                 {
                     Id = br.Id,
@@ -94,9 +88,18 @@ namespace t_board_backend.Controllers
                         CreateUser = bo.CreateUser,
                         UpdateUser = bo.UpdateUser
                     }).ToArray()
-                }).ToArray();
+                });
 
-            return Ok(brands);
+            var brands = await PaginatedList<BrandDto>.CreateAsync(companyBrandsQuery.AsNoTracking(), pageIndex, pageSize);
+
+            return Ok(new
+            {
+                PageIndex = brands.PageIndex,
+                PageCount = brands.TotalPages,
+                HasNextPage = brands.HasNextPage,
+                HasPreviousPage = brands.HasPreviousPage,
+                Result = brands
+            });
         }
 
         [HttpGet("getBrand")]
