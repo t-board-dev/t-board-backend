@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using t_board.Entity;
+using t_board.Helpers;
 using t_board.Services.Contracts;
 using t_board_backend.Extensions;
 using t_board_backend.Models.Board.Dto;
@@ -40,9 +41,9 @@ namespace t_board_backend.Controllers
         [Authorize(Roles = "Admin")]
         [HttpGet("getCompanies")]
         [ProducesResponseType(typeof(CompanyDto[]), 200)]
-        public async Task<IActionResult> GetCompanies()
+        public async Task<IActionResult> GetCompanies([FromQuery] int pageIndex, int pageSize)
         {
-            var companies = await _dbContext.Companies
+            var companiesQuery = _dbContext.Companies
                 .Include(c => c.Brands)
                 .ThenInclude(br => br.Boards)
                 .Select(c => new CompanyDto()
@@ -79,10 +80,18 @@ namespace t_board_backend.Controllers
                         .ToArray()
                     })
                     .ToArray()
-                })
-                .ToArrayAsync();
+                });
 
-            return Ok(companies);
+            var companies = await PaginatedList<CompanyDto>.CreateAsync(companiesQuery.AsNoTracking(), pageIndex, pageSize);
+
+            return Ok(new
+            {
+                PageIndex = companies.PageIndex,
+                PageCount = companies.TotalPages,
+                HasNextPage = companies.HasNextPage,
+                HasPreviousPage = companies.HasPreviousPage,
+                Result = companies
+            });
         }
 
         [Authorize(Roles = "Admin, CompanyOwner")]
@@ -200,7 +209,7 @@ namespace t_board_backend.Controllers
 
         //    return Ok(companyUsers);
         //}
-        
+
         [Authorize(Roles = "Admin, CompanyOwner")]
         [HttpGet("getCompanyUsers")]
         [ProducesResponseType(typeof(CompanyUserDto[]), 200)]
@@ -326,7 +335,7 @@ namespace t_board_backend.Controllers
 
             return Ok();
         }
-        
+
         [Authorize(Roles = "Admin")]
         [HttpPost("updateCompany")]
         public async Task<IActionResult> UpdateCompany([FromBody] CompanyDto companyDto)
