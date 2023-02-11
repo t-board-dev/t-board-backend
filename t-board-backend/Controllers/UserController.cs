@@ -5,11 +5,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using t_board.Entity;
+using t_board.Helpers;
 using t_board.Services.Contracts;
 using t_board_backend.Extensions;
 using t_board_backend.Models.User;
@@ -362,6 +364,38 @@ namespace t_board_backend.Controllers
             await _signInManager.SignOutAsync();
             Response.Cookies.Delete("X-Access-Token");
             return Ok();
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("getUsers")]
+        public async Task<IActionResult> GetUsers([FromQuery] int pageIndex, int pageSize)
+        {
+            var result = new List<UserDto>();
+
+            var pagedUsers = await PaginatedList<TBoardUser>.CreateAsync(_userManager.Users.AsNoTracking(), pageIndex, pageSize);
+            foreach (var user in pagedUsers)
+            {
+                result.Add(new UserDto()
+                {
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Email = user.Email,
+                    Title = user.Title,
+                    PhoneNumber = user.PhoneNumber,
+                    AccountLocked = await _userService.IsUserLocked(user.Email),
+                    Roles = (await _userManager.GetRolesAsync(user)).ToArray(),
+                    CompanyId = (await _dbContext.CompanyUsers.FirstOrDefaultAsync(cu => cu.UserId == user.Id))?.CompanyId
+                });
+            }
+
+            return Ok(new
+            {
+                PageIndex = pagedUsers.PageIndex,
+                PageCount = pagedUsers.TotalPages,
+                HasNextPage = pagedUsers.HasNextPage,
+                HasPreviousPage = pagedUsers.HasPreviousPage,
+                Result = result
+            });
         }
     }
 }
