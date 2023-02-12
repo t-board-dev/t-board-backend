@@ -11,8 +11,11 @@ using System.Text;
 using System.Threading.Tasks;
 using t_board.Entity;
 using t_board.Services;
+using t_board_backend.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddLogging();
 
 builder.Services.AddDbContext<TBoardDbContext>();
 
@@ -150,6 +153,8 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.ConfigureCustomExceptionMiddleware();
 
 app.MapControllers();
 
