@@ -31,6 +31,7 @@ public class TBoardDbContext : IdentityDbContext
 
     public DbSet<Brand> Brands { get; set; }
     public DbSet<BrandUser> BrandUsers { get; set; }
+    public DbSet<BrandFile> BrandFiles { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -133,6 +134,19 @@ public class TBoardDbContext : IdentityDbContext
         {
             e.Property(bu => bu.BrandId).IsRequired();
             e.Property(bu => bu.UserId).IsRequired().HasMaxLength(450);
+        });
+
+        builder.Entity<BrandFile>(e =>
+        {
+            e.Property(bu => bu.BrandId).IsRequired();
+            e.Property(bu => bu.Name).IsRequired().HasMaxLength(256);
+            e.Property(bu => bu.URL).IsRequired().HasMaxLength(256);
+
+            e.HasOne(b => b.Brand)
+             .WithMany(c => c.BrandFiles)
+             .HasForeignKey(b => b.BrandId)
+             .OnDelete(DeleteBehavior.ClientSetNull)
+             .HasConstraintName("FK_BrandFile_Brand");
         });
     }
 

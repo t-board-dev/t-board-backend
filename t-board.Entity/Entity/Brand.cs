@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using t_board.Entity.Entity;
 
 namespace t_board.Entity
 {
@@ -9,6 +10,7 @@ namespace t_board.Entity
         public Brand()
         {
             Boards = new HashSet<Board>();
+            BrandFiles = new HashSet<BrandFile>();
         }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -31,5 +33,7 @@ namespace t_board.Entity
         public virtual Company Company { get; set; }
 
         public virtual ICollection<Board> Boards { get; set; }
+
+        public virtual ICollection<BrandFile> BrandFiles { get; set; }
     }
 }

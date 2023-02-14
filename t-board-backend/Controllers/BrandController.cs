@@ -50,14 +50,14 @@ namespace t_board_backend.Controllers
             if (isCurrentUserAdmin is false)
             {
                 var companyId = await HttpContext.GetCurrentUserCompanyId();
-                
+
                 var userId = await HttpContext.GetCurrentUserId();
 
                 var authorizedBrands = await _dbContext.BrandUsers
                     .Where(q => q.UserId == userId)
                     .Select(q => q.BrandId)
                     .ToListAsync();
-                
+
                 expression = b => b.CompanyId == companyId && authorizedBrands.Contains(b.Id);
             }
 
@@ -427,6 +427,47 @@ namespace t_board_backend.Controllers
 
             var brandUserCreated = await _dbContext.SaveChangesAsync();
             if (brandUserCreated is 0) return UnprocessableEntity("User could not assigned!");
+
+            return Ok();
+        }
+
+        [HttpPost("saveBrandFile")]
+        public async Task<IActionResult> SaveBrandFile([FromBody] SaveBrandFileRequest saveBrandFileRequest)
+        {
+            var isCurrentUserAdmin = HttpContext.IsCurrentUserAdmin();
+
+            if (isCurrentUserAdmin is false)
+            {
+                var userId = await HttpContext.GetCurrentUserId();
+
+                var userBrands = await _dbContext.BrandUsers
+                    .Where(b => b.UserId == userId)
+                    .Select(b => b.BrandId)
+                    .ToListAsync();
+
+                if (userBrands.Contains(saveBrandFileRequest.BrandId) is false) return Unauthorized();
+            }
+
+            var brandFile = await _dbContext.BrandFiles
+                .Where(f =>
+                    f.BrandId == saveBrandFileRequest.BrandId &&
+                    f.Name == saveBrandFileRequest.Name &&
+                    f.URL == saveBrandFileRequest.URL)
+                .FirstOrDefaultAsync();
+
+            if (brandFile != null)
+            {
+                var newBrandFile = new BrandFile()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    BrandId = saveBrandFileRequest.BrandId,
+                    Name = saveBrandFileRequest.Name,
+                    URL = saveBrandFileRequest.URL,
+                };
+
+                await _dbContext.AddAsync(newBrandFile);
+                await _dbContext.SaveChangesAsync();
+            }
 
             return Ok();
         }
