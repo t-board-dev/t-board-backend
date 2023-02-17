@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
+using Newtonsoft.Json;
 using System.Threading.Tasks;
 using t_board.Services.Contracts;
 
@@ -26,12 +26,7 @@ namespace t_board_backend.Controllers
         {
             object scrappedModel = _ajansPressScrapper.Scrape(url);
 
-            var jsonModel = JsonSerializer.Serialize(
-                scrappedModel,
-                new JsonSerializerOptions()
-                {
-                    Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-                });
+            var jsonModel = JsonConvert.SerializeObject(scrappedModel);
 
             return Ok(jsonModel);
         }
@@ -41,12 +36,7 @@ namespace t_board_backend.Controllers
         {
             object scrappedModel = _interPressScrapper.Scrape(url);
 
-            var jsonModel = JsonSerializer.Serialize(
-                scrappedModel,
-                new JsonSerializerOptions()
-                {
-                    Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-                });
+            var jsonModel = JsonConvert.SerializeObject(scrappedModel);
 
             return Ok(jsonModel);
         }
@@ -56,12 +46,7 @@ namespace t_board_backend.Controllers
         {
             object scrappedModel = _medyaTakipScrapper.Scrape(url);
 
-            var jsonModel = JsonSerializer.Serialize(
-                scrappedModel,
-                new JsonSerializerOptions()
-                {
-                    Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-                });
+            var jsonModel = JsonConvert.SerializeObject(scrappedModel);
 
             return Ok(jsonModel);
         }

@@ -1,5 +1,6 @@
 ﻿using HtmlAgilityPack;
 using System;
+using System.Globalization;
 using t_board.Services.Contracts;
 
 namespace t_board.Services.Services.Scrapper
@@ -133,7 +134,7 @@ namespace t_board.Services.Services.Scrapper
         public string Reference { get; set; }
         public string PublishName { get; set; }
         public string PublishDateStr { get; set; }
-        public DateTime PublishDate { get => DateTime.Parse(this.PublishDateStr); }
+        public DateTime PublishDate { get => DateTime.ParseExact(this.PublishDateStr, "dd.MM.yyyy", CultureInfo.InvariantCulture); }
         public string Subject { get; set; }
         public string Effect { get; set; }
         public string Keyword { get; set; }
@@ -146,7 +147,7 @@ namespace t_board.Services.Services.Scrapper
         public string BroadcastName { get; set; }
         public string ProgramName { get; set; }
         public string BroadcastDateStr { get; set; }
-        public DateTime BroadcastDate { get => DateTime.Parse(this.BroadcastDateStr); }
+        public DateTime BroadcastDate { get => DateTime.ParseExact(this.BroadcastDateStr, "dd.MM.yyyy", CultureInfo.InvariantCulture); }
         public string BroadcastTimeStr { get; set; }
         public TimeSpan BroadcastTime { get => TimeSpan.Parse(this.BroadcastTimeStr); }
         public string BroadcastLengthStr { get; set; }
@@ -164,9 +165,9 @@ namespace t_board.Services.Services.Scrapper
         public string Period { get; set; }
         public int PageNo { get; set; }
         public string PublishDateStr { get; set; }
-        public DateTime PublishDate { get => DateTime.Parse(this.PublishDateStr); }
+        public DateTime PublishDate { get => DateTime.ParseExact(this.PublishDateStr, "dd.MM.yyyy", CultureInfo.InvariantCulture); }
         public string ReportDateStr { get; set; }
-        public DateTime ReportDate { get => DateTime.Parse(this.ReportDateStr); }
+        public DateTime ReportDate { get => DateTime.ParseExact(this.ReportDateStr, "dd.MM.yyyy", CultureInfo.InvariantCulture); }
         public string Subject { get; set; }
         public string Effect { get; set; }
         public string Keyword { get; set; }
