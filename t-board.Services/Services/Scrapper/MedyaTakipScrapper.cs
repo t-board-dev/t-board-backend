@@ -1,6 +1,7 @@
 ﻿using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using t_board.Services.Contracts;
 
@@ -82,7 +83,7 @@ namespace t_board.Services.Services.Scrapper
         public string Url { get; set; }
         public string Title { get; set; }
         public string DateStr { get; set; }
-        public DateTime Date { get => DateTime.Parse(this.DateStr); }
+        public DateTime Date { get => DateTime.ParseExact(this.DateStr, "dd.MM.yyyy", CultureInfo.InvariantCulture); }
         public IEnumerable<string> Keywords { get; set; }
     }
 
@@ -92,7 +93,7 @@ namespace t_board.Services.Services.Scrapper
         public string Period { get; set; }
         public int PageNo { get; set; }
         public string PublishDateStr { get; set; }
-        public DateTime PublishDate { get => DateTime.Parse(this.PublishDateStr); }
+        public DateTime PublishDate { get => DateTime.ParseExact(this.PublishDateStr, "dd.MM.yyyy", CultureInfo.InvariantCulture); }
         public IEnumerable<string> Keywords { get; set; }
         public decimal AdEquivalent { get; set; }
         public string City { get; set; }

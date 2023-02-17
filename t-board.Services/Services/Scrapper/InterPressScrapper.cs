@@ -2,6 +2,7 @@
 using OpenQA.Selenium.Chrome;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using t_board.Services.Contracts;
@@ -134,7 +135,7 @@ namespace t_board.Services.Services.Scrapper
         public string Title { get; set; }
         public string PublishName { get; set; }
         public string PublishDateStr { get; set; }
-        public DateTime PublishDate { get => DateTime.Parse(this.PublishDateStr); }
+        public DateTime PublishDate { get => DateTime.ParseExact(this.PublishDateStr, "dd.MM.yyyy", CultureInfo.InvariantCulture); }
         public string Content { get; set; }
         public IEnumerable<string> Keywords { get; set; }
     }
@@ -144,7 +145,7 @@ namespace t_board.Services.Services.Scrapper
         public string Title { get; set; }
         public string PublishName { get; set; }
         public string PublishDateStr { get; set; }
-        public DateTime PublishDate { get => DateTime.Parse(this.PublishDateStr); }
+        public DateTime PublishDate { get => DateTime.ParseExact(this.PublishDateStr, "dd.MM.yyyy", CultureInfo.InvariantCulture); }
         public string Location { get; set; }
         public string Content { get; set; }
         public decimal AdEquivalent { get; set; }
@@ -159,7 +160,7 @@ namespace t_board.Services.Services.Scrapper
         public string BroadcastName { get; set; }
         public string ProgramName { get; set; }
         public string BroadcastDateStr { get; set; }
-        public DateTime BroadcastDate { get => DateTime.Parse(this.BroadcastDateStr); }
+        public DateTime BroadcastDate { get => DateTime.ParseExact(this.BroadcastDateStr, "dd.MM.yyyy", CultureInfo.InvariantCulture); }
         public string BroadcastLengthStr { get; set; }
         public TimeSpan BroadcastLength { get => TimeSpan.Parse(this.BroadcastLengthStr); }
         public IEnumerable<string> Keywords { get; set; }
