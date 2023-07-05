@@ -4,7 +4,7 @@ namespace t_board_backend.Models.Board.Dto
 {
     public class BoardDto
     {
-        public int Id { get; set; }
+        public string Id { get; set; }
 
         public int BrandId { get; set; }
 

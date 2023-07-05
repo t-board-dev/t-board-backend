@@ -39,6 +39,7 @@ public class TBoardDbContext : IdentityDbContext
 
         builder.Entity<Board>(e =>
         {
+            e.Property(b => b.Id).IsRequired().HasMaxLength(450);
             e.Property(b => b.BrandId).IsRequired();
             e.Property(b => b.Name).IsRequired().HasMaxLength(256);
             e.Property(b => b.Description).IsRequired().HasMaxLength(512);
@@ -58,6 +59,7 @@ public class TBoardDbContext : IdentityDbContext
 
         builder.Entity<BoardItem>(e =>
         {
+            e.Property(b => b.BoardId).IsRequired().HasMaxLength(450);
             e.Property(i => i.Title).IsRequired().HasMaxLength(256);
             e.Property(i => i.Type).IsRequired();
             e.Property(i => i.GridData).IsRequired().HasMaxLength(512);
