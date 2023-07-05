@@ -31,7 +31,7 @@ namespace t_board_backend.Controllers
             //var currentUser = await HttpContext.GetCurrentUserId();
 
             var board = await _dbContext.Boards
-                .Where(b => 
+                .Where(b =>
                     b.Id == boardId &&
                     b.Status == 1)
                 .Select(b => new BoardDto()
@@ -231,12 +231,12 @@ namespace t_board_backend.Controllers
             var currentUser = await HttpContext.GetCurrentUserId();
 
             var board = await _dbContext.Boards.Where(b => b.Id == boardDto.Id).FirstOrDefaultAsync();
-            if (board == null) return NotFound(boardDto);
+            if (board == null) return NotFound();
 
             if (isCurrentUserAdmin is false)
             {
                 var brandUser = await _dbContext.BrandUsers.Where(u => u.UserId == currentUser && u.BrandId == board.BrandId).FirstOrDefaultAsync();
-                if (brandUser == null) return Forbid();
+                if (brandUser == null) return NotFound();
             }
 
             board.Name = boardDto.Name;
@@ -266,12 +266,12 @@ namespace t_board_backend.Controllers
                 foreach (var boardItem in boardItems)
                 {
                     var board = await _dbContext.Boards.Where(b => b.Id == boardItem.BoardId).FirstOrDefaultAsync();
-                    if (board == null) BadRequest("Board could not found!");
+                    if (board == null) return NotFound();
 
                     if (isCurrentUserAdmin is false)
                     {
                         var brandUser = await _dbContext.BrandUsers.Where(u => u.UserId == currentUser && u.BrandId == board.BrandId).FirstOrDefaultAsync();
-                        if (brandUser == null) return Forbid();
+                        if (brandUser == null) return NotFound();
                     }
 
                     var type = await _dbContext.BoardItemTypes.Where(t => t.Id == boardItem.Type).FirstOrDefaultAsync();
@@ -306,7 +306,6 @@ namespace t_board_backend.Controllers
 
                         _dbContext.Entry(currentBoardItem).State = EntityState.Modified;
                     }
-
                 }
 
                 var boardItemsUpdated = await _dbContext.SaveChangesAsync();
