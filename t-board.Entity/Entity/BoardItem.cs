@@ -8,7 +8,7 @@ namespace t_board.Entity
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        public int BoardId { get; set; }
+        public string BoardId { get; set; }
 
         public string Title { get; set; }
         

@@ -11,8 +11,7 @@ namespace t_board.Entity
             BoardItems = new HashSet<BoardItem>();
         }
 
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
+        public string Id { get; set; }
 
         public int BrandId { get; set; }
 

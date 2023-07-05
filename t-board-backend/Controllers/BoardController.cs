@@ -26,12 +26,14 @@ namespace t_board_backend.Controllers
 
         [HttpGet("getBoard")]
         [ProducesResponseType(typeof(BoardDto), 200)]
-        public async Task<IActionResult> GetBoard([FromQuery] int boardId)
+        public async Task<IActionResult> GetBoard([FromQuery] string boardId)
         {
             //var currentUser = await HttpContext.GetCurrentUserId();
 
             var board = await _dbContext.Boards
-                .Where(b => b.Id == boardId)
+                .Where(b => 
+                    b.Id == boardId &&
+                    b.Status == 1)
                 .Select(b => new BoardDto()
                 {
                     Id = b.Id,
@@ -58,6 +60,38 @@ namespace t_board_backend.Controllers
             //if (brandUser == null) return Forbid();
 
             return Ok(board);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("getBoards")]
+        [ProducesResponseType(typeof(BoardDto[]), 200)]
+        public async Task<IActionResult> GetBoards(int pageIndex, int pageSize)
+        {
+            var boardsQuery = _dbContext.Boards
+                .Select(b => new BoardDto()
+                {
+                    Id = b.Id,
+                    BrandId = b.BrandId,
+                    Name = b.Name,
+                    Description = b.Description,
+                    Status = b.Status,
+                    Design = b.Design,
+                    CreateDate = b.CreateDate,
+                    UpdateDate = b.UpdateDate,
+                    CreateUser = b.CreateUser,
+                    UpdateUser = b.UpdateUser
+                });
+
+            var boards = await PaginatedList<BoardDto>.CreateAsync(boardsQuery, pageIndex, pageSize);
+
+            return Ok(new
+            {
+                PageIndex = boards.PageIndex,
+                PageCount = boards.TotalPages,
+                HasNextPage = boards.HasNextPage,
+                HasPreviousPage = boards.HasPreviousPage,
+                Result = boards
+            });
         }
 
         [Authorize]
@@ -104,7 +138,7 @@ namespace t_board_backend.Controllers
 
         [HttpGet("getBoardItems")]
         [ProducesResponseType(typeof(BoardItemDto[]), 200)]
-        public async Task<IActionResult> GetBoardItems([FromQuery] int boardId)
+        public async Task<IActionResult> GetBoardItems([FromQuery] string boardId)
         {
             var board = await _dbContext.Boards
                 .Where(b => b.Id == boardId)
@@ -173,6 +207,7 @@ namespace t_board_backend.Controllers
 
             var newBoard = new Board()
             {
+                Id = Guid.NewGuid().ToString(),
                 BrandId = createBoardRequest.BrandId,
                 Name = createBoardRequest.Name,
                 Description = createBoardRequest.Description,

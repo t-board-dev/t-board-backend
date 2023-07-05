@@ -6,7 +6,7 @@ namespace t_board_backend.Models.Board.Dto
     {
         public int Id { get; set; }
 
-        public int BoardId { get; set; }
+        public string BoardId { get; set; }
 
         public string Title { get; set; }
 
