@@ -168,7 +168,7 @@ namespace t_board_backend.Controllers
             return Ok(brand);
         }
 
-        [Authorize(Roles = "Admin, CompanyOwner")]
+        [Authorize]
         [HttpGet("getBrandUsers")]
         [ProducesResponseType(typeof(BrandUserDto[]), 200)]
         public async Task<IActionResult> GetBrandUsers(int brandId)
@@ -191,6 +191,7 @@ namespace t_board_backend.Controllers
                     FirstName = u.FirstName,
                     LastName = u.LastName,
                     Email = u.Email,
+                    PhoneNumber = u.PhoneNumber,
                     Title = u.Title,
                     AvatarURL = u.AvatarURL,
                     AccountLocked = u.LockoutEnabled && u.LockoutEnd > DateTime.Now
