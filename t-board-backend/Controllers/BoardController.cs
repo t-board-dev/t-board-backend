@@ -62,6 +62,38 @@ namespace t_board_backend.Controllers
             return Ok(board);
         }
 
+        [Authorize(Roles = "Admin")]
+        [HttpGet("getBoards")]
+        [ProducesResponseType(typeof(BoardDto[]), 200)]
+        public async Task<IActionResult> GetBoards(int pageIndex, int pageSize)
+        {
+            var boardsQuery = _dbContext.Boards
+                .Select(b => new BoardDto()
+                {
+                    Id = b.Id,
+                    BrandId = b.BrandId,
+                    Name = b.Name,
+                    Description = b.Description,
+                    Status = b.Status,
+                    Design = b.Design,
+                    CreateDate = b.CreateDate,
+                    UpdateDate = b.UpdateDate,
+                    CreateUser = b.CreateUser,
+                    UpdateUser = b.UpdateUser
+                });
+
+            var boards = await PaginatedList<BoardDto>.CreateAsync(boardsQuery, pageIndex, pageSize);
+
+            return Ok(new
+            {
+                PageIndex = boards.PageIndex,
+                PageCount = boards.TotalPages,
+                HasNextPage = boards.HasNextPage,
+                HasPreviousPage = boards.HasPreviousPage,
+                Result = boards
+            });
+        }
+
         [Authorize]
         [HttpGet("getBrandBoards")]
         [ProducesResponseType(typeof(BoardDto[]), 200)]
