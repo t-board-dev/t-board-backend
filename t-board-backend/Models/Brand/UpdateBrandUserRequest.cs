@@ -14,5 +14,11 @@ namespace t_board_backend.Models.Brand
         [Required]
         [JsonProperty("userId")]
         public string UserId { get; set; }
+        [Required]
+        [JsonProperty("userTitle")]
+        public string UserTitle { get; set; }
+        [Required]
+        [JsonProperty("userPhoneNumber")]
+        public string UserPhoneNumber { get; set; }
     }
 }

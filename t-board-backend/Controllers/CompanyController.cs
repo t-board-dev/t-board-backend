@@ -231,10 +231,12 @@ namespace t_board_backend.Controllers
                                       where cu.CompanyId == companyId
                                       select new CompanyUserDto()
                                       {
+                                          UserId = u.Id,
                                           CompanyId = cu.CompanyId,
                                           FirstName = u.FirstName,
                                           LastName = u.LastName,
                                           Email = u.Email,
+                                          PhoneNumber = u.PhoneNumber,
                                           Title = u.Title,
                                           AvatarURL = u.AvatarURL,
                                           AccountLocked = u.LockoutEnabled && u.LockoutEnd > DateTime.Now

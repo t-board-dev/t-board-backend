@@ -187,6 +187,7 @@ namespace t_board_backend.Controllers
                 .Join(_dbContext.TBoardUsers, bu => bu.UserId, u => u.Id,
                 (bu, u) => new BrandUserDto()
                 {
+                    UserId = u.Id,
                     BrandId = bu.BrandId,
                     FirstName = u.FirstName,
                     LastName = u.LastName,
@@ -384,6 +385,9 @@ namespace t_board_backend.Controllers
         [HttpPost("updateBrandUser")]
         public async Task<IActionResult> UpdateBrandUser([FromBody] UpdateBrandUserRequest updateBrandUserRequest)
         {
+            var user = await _userManager.FindByIdAsync(updateBrandUserRequest.UserId);
+            if (user == null) return NotFound("User not found!");
+
             if (HttpContext.IsCurrentUserAdmin() is false)
             {
                 var companyId = await HttpContext.GetCurrentUserCompanyId();
@@ -428,6 +432,12 @@ namespace t_board_backend.Controllers
 
             var brandUserCreated = await _dbContext.SaveChangesAsync();
             if (brandUserCreated is 0) return UnprocessableEntity("User could not assigned!");
+
+            user.Title = updateBrandUserRequest.UserTitle;
+            user.PhoneNumber = updateBrandUserRequest.UserPhoneNumber;
+
+            var userUpdated = await _userManager.UpdateAsync(user);
+            if (userUpdated.Succeeded is false) return UnprocessableEntity("User info could not updated!");
 
             return Ok();
         }

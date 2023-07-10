@@ -1,9 +1,8 @@
-﻿using t_board.Entity;
-
-namespace t_board_backend.Models.Brand.Dto
+﻿namespace t_board_backend.Models.Brand.Dto
 {
     public class BrandUserDto
     {
+        public string UserId { get; set; }
         public int BrandId { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
