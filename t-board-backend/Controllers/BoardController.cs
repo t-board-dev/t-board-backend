@@ -220,7 +220,7 @@ namespace t_board_backend.Controllers
             _dbContext.Add(newBoard);
             await _dbContext.SaveChangesAsync();
 
-            return Ok();
+            return Ok(newBoard.Id);
         }
 
         [Authorize]
