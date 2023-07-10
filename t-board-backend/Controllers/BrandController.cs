@@ -187,6 +187,7 @@ namespace t_board_backend.Controllers
                 .Join(_dbContext.TBoardUsers, bu => bu.UserId, u => u.Id,
                 (bu, u) => new BrandUserDto()
                 {
+                    UserId = u.Id,
                     BrandId = bu.BrandId,
                     FirstName = u.FirstName,
                     LastName = u.LastName,
