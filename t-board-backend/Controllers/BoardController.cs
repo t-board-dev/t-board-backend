@@ -32,6 +32,7 @@ namespace t_board_backend.Controllers
             //var currentUser = await HttpContext.GetCurrentUserId();
 
             var board = await _dbContext.Boards
+                .AsNoTracking()
                 .Where(b =>
                     b.Id == boardId &&
                     b.Status == 1)
@@ -69,6 +70,7 @@ namespace t_board_backend.Controllers
         public async Task<IActionResult> GetBoards(int pageIndex, int pageSize)
         {
             var boardsQuery = _dbContext.Boards
+                .AsNoTracking()
                 .Select(b => new BoardDto()
                 {
                     Id = b.Id,
@@ -105,11 +107,12 @@ namespace t_board_backend.Controllers
 
             if (isCurrentUserAdmin is false)
             {
-                var brandUser = await _dbContext.BrandUsers.Where(u => u.UserId == currentUser && u.BrandId == brandId).FirstOrDefaultAsync();
+                var brandUser = await _dbContext.BrandUsers.AsNoTracking().Where(u => u.UserId == currentUser && u.BrandId == brandId).FirstOrDefaultAsync();
                 if (brandUser == null) return NotFound();
             }
 
             var boardsQuery = _dbContext.Boards
+                .AsNoTracking()
                 .Where(b => b.BrandId == brandId)
                 .Select(b => new BoardDto()
                 {
@@ -142,6 +145,7 @@ namespace t_board_backend.Controllers
         public async Task<IActionResult> GetBoardItems([FromQuery] string boardId)
         {
             var board = await _dbContext.Boards
+                .AsNoTracking()
                 .Where(b => b.Id == boardId)
                 .Include(b => b.BoardItems)
                 .FirstOrDefaultAsync();
@@ -169,6 +173,7 @@ namespace t_board_backend.Controllers
         public async Task<IActionResult> GetBoardItemTypes()
         {
             var boardItemTypes = await _dbContext.BoardItemTypes
+                .AsNoTracking()
                 .Select(b => new BoardItemTypeDto()
                 {
                     Id = b.Id,
@@ -223,7 +228,7 @@ namespace t_board_backend.Controllers
 
             if (isCurrentUserAdmin is false)
             {
-                var brandUser = await _dbContext.BrandUsers.Where(u => u.UserId == currentUser && u.BrandId == board.BrandId).FirstOrDefaultAsync();
+                var brandUser = await _dbContext.BrandUsers.AsNoTracking().Where(u => u.UserId == currentUser && u.BrandId == board.BrandId).FirstOrDefaultAsync();
                 if (brandUser == null) return NotFound();
             }
 
@@ -246,68 +251,68 @@ namespace t_board_backend.Controllers
         [HttpPost("updateBoardItems")]
         public async Task<IActionResult> UpdateBoardItems([FromBody] BoardItemDto[] boardItems)
         {
-                var isCurrentUserAdmin = HttpContext.IsCurrentUserAdmin();
-                var currentUser = await HttpContext.GetCurrentUserId();
+            var isCurrentUserAdmin = HttpContext.IsCurrentUserAdmin();
+            var currentUser = await HttpContext.GetCurrentUserId();
 
-                var responseBoardItems = new List<BoardItemDto>(boardItems.Length);
+            var responseBoardItems = new List<BoardItemDto>(boardItems.Length);
 
-                foreach (var boardItem in boardItems)
+            foreach (var boardItem in boardItems)
+            {
+                var board = await _dbContext.Boards.AsNoTracking().Where(b => b.Id == boardItem.BoardId).FirstOrDefaultAsync();
+                if (board == null) return NotFound("Board not found!");
+
+                if (isCurrentUserAdmin is false)
                 {
-                    var board = await _dbContext.Boards.Where(b => b.Id == boardItem.BoardId).FirstOrDefaultAsync();
-                    if (board == null) return NotFound("Board not found!");
-
-                    if (isCurrentUserAdmin is false)
-                    {
-                        var brandUser = await _dbContext.BrandUsers.Where(u => u.UserId == currentUser && u.BrandId == board.BrandId).FirstOrDefaultAsync();
-                        if (brandUser == null) return NotFound("Board not found!");
-                    }
-
-                    var type = await _dbContext.BoardItemTypes.Where(t => t.Code == boardItem.Type).FirstOrDefaultAsync();
-                    if (type == null) BadRequest($"Board item type could not found!");
-
-                    if (boardItem.Id > 0)
-                    {
-                        var currentBoardItem = await _dbContext.BoardItems.Where(i => i.Id == boardItem.Id).FirstOrDefaultAsync();
-
-                        currentBoardItem.Title = boardItem.Title;
-                        currentBoardItem.GridData = boardItem.GridData;
-                        currentBoardItem.CustomGridData = boardItem.CustomGridData;
-                        currentBoardItem.Data = boardItem.Data;
-                        currentBoardItem.UpdateDate = DateTimeOffset.Now;
-                        currentBoardItem.UpdateUser = currentUser;
-
-                        _dbContext.Entry(currentBoardItem).State = EntityState.Modified;
-
-                        var boardItemUpdated = await _dbContext.SaveChangesAsync();
-                        if (boardItemUpdated is 0) return Problem("Board item could not updated!");
-
-                        responseBoardItems.Add(new BoardItemDto(currentBoardItem));
-                    }
-                    else
-                    {
-                        var newBoardItem = new BoardItem()
-                        {
-                            BoardId = boardItem.BoardId,
-                            Title = boardItem.Title,
-                            Type = boardItem.Type,
-                            GridData = boardItem.GridData,
-                            CustomGridData = boardItem.CustomGridData,
-                            Data = boardItem.Data,
-                            CreateDate = DateTimeOffset.Now,
-                            CreateUser = currentUser
-                        };
-
-                        _dbContext.Add(newBoardItem);
-
-                        var boardItemSaved = await _dbContext.SaveChangesAsync();
-                        if (boardItemSaved is 0) return Problem("Board item could not updated!");
-
-                        responseBoardItems.Add(new BoardItemDto(newBoardItem));
-                    }
+                    var brandUser = await _dbContext.BrandUsers.AsNoTracking().Where(u => u.UserId == currentUser && u.BrandId == board.BrandId).FirstOrDefaultAsync();
+                    if (brandUser == null) return NotFound("Board not found!");
                 }
 
-                return Ok(responseBoardItems);
+                var type = await _dbContext.BoardItemTypes.AsNoTracking().Where(t => t.Code == boardItem.Type).FirstOrDefaultAsync();
+                if (type == null) BadRequest($"Board item type could not found!");
+
+                if (boardItem.Id > 0)
+                {
+                    var currentBoardItem = await _dbContext.BoardItems.Where(i => i.Id == boardItem.Id).FirstOrDefaultAsync();
+
+                    currentBoardItem.Title = boardItem.Title;
+                    currentBoardItem.GridData = boardItem.GridData;
+                    currentBoardItem.CustomGridData = boardItem.CustomGridData;
+                    currentBoardItem.Data = boardItem.Data;
+                    currentBoardItem.UpdateDate = DateTimeOffset.Now;
+                    currentBoardItem.UpdateUser = currentUser;
+
+                    _dbContext.Entry(currentBoardItem).State = EntityState.Modified;
+
+                    var boardItemUpdated = await _dbContext.SaveChangesAsync();
+                    if (boardItemUpdated is 0) return Problem("Board item could not updated!");
+
+                    responseBoardItems.Add(new BoardItemDto(currentBoardItem));
+                }
+                else
+                {
+                    var newBoardItem = new BoardItem()
+                    {
+                        BoardId = boardItem.BoardId,
+                        Title = boardItem.Title,
+                        Type = boardItem.Type,
+                        GridData = boardItem.GridData,
+                        CustomGridData = boardItem.CustomGridData,
+                        Data = boardItem.Data,
+                        CreateDate = DateTimeOffset.Now,
+                        CreateUser = currentUser
+                    };
+
+                    _dbContext.Add(newBoardItem);
+
+                    var boardItemSaved = await _dbContext.SaveChangesAsync();
+                    if (boardItemSaved is 0) return Problem("Board item could not updated!");
+
+                    responseBoardItems.Add(new BoardItemDto(newBoardItem));
+                }
             }
+
+            return Ok(responseBoardItems);
+        }
 
         [Authorize]
         [HttpPost("deleteBoardItems")]
@@ -319,17 +324,17 @@ namespace t_board_backend.Controllers
             foreach (var boardItemId in boardItemIds)
             {
                 if (boardItemId > 0)
-            {
+                {
                     var boardItem = await _dbContext.BoardItems.Where(i => i.Id == boardItemId).FirstOrDefaultAsync();
 
-                var board = await _dbContext.Boards.AsNoTracking().Where(b => b.Id == boardItem.BoardId).FirstOrDefaultAsync();
-                if (board == null) return NotFound("Board not found!");
+                    var board = await _dbContext.Boards.AsNoTracking().Where(b => b.Id == boardItem.BoardId).FirstOrDefaultAsync();
+                    if (board == null) return NotFound("Board not found!");
 
-                if (isCurrentUserAdmin is false)
-                {
-                    var brandUser = await _dbContext.BrandUsers.AsNoTracking().Where(u => u.UserId == currentUser && u.BrandId == board.BrandId).FirstOrDefaultAsync();
-                    if (brandUser == null) return NotFound("Board not found!");
-                }
+                    if (isCurrentUserAdmin is false)
+                    {
+                        var brandUser = await _dbContext.BrandUsers.AsNoTracking().Where(u => u.UserId == currentUser && u.BrandId == board.BrandId).FirstOrDefaultAsync();
+                        if (brandUser == null) return NotFound("Board not found!");
+                    }
 
                     _dbContext.Entry(boardItem).State = EntityState.Deleted;
 
