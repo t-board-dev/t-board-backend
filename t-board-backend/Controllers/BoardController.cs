@@ -246,8 +246,6 @@ namespace t_board_backend.Controllers
         [HttpPost("updateBoardItems")]
         public async Task<IActionResult> UpdateBoardItems([FromBody] BoardItemDto[] boardItems)
         {
-            try
-            {
                 var isCurrentUserAdmin = HttpContext.IsCurrentUserAdmin();
                 var currentUser = await HttpContext.GetCurrentUserId();
 
@@ -310,11 +308,36 @@ namespace t_board_backend.Controllers
 
                 return Ok(responseBoardItems);
             }
-            catch (Exception ex)
+
+        [Authorize]
+        [HttpPost("deleteBoardItems")]
+        public async Task<IActionResult> DeleteBoardItems([FromBody] int[] boardItemIds)
+        {
+            var isCurrentUserAdmin = HttpContext.IsCurrentUserAdmin();
+            var currentUser = await HttpContext.GetCurrentUserId();
+
+            foreach (var boardItemId in boardItemIds)
             {
-                Console.WriteLine(ex);
-                return Problem();
+                if (boardItemId > 0)
+            {
+                    var boardItem = await _dbContext.BoardItems.Where(i => i.Id == boardItemId).FirstOrDefaultAsync();
+
+                var board = await _dbContext.Boards.AsNoTracking().Where(b => b.Id == boardItem.BoardId).FirstOrDefaultAsync();
+                if (board == null) return NotFound("Board not found!");
+
+                if (isCurrentUserAdmin is false)
+                {
+                    var brandUser = await _dbContext.BrandUsers.AsNoTracking().Where(u => u.UserId == currentUser && u.BrandId == board.BrandId).FirstOrDefaultAsync();
+                    if (brandUser == null) return NotFound("Board not found!");
+                }
+
+                    _dbContext.Entry(boardItem).State = EntityState.Deleted;
+
+                    await _dbContext.SaveChangesAsync();
+                }
             }
+
+            return Ok();
         }
     }
 }
