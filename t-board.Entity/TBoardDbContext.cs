@@ -64,7 +64,7 @@ public class TBoardDbContext : IdentityDbContext
             e.Property(i => i.Type).IsRequired().HasMaxLength(256);
             e.Property(i => i.GridData).IsRequired().HasMaxLength(512);
             e.Property(i => i.CustomGridData).IsRequired().HasMaxLength(512);
-            e.Property(i => i.Data).IsRequired().HasMaxLength(512);
+            e.Property(i => i.Data).IsRequired();
             e.Property(i => i.CreateDate).IsRequired();
             e.Property(i => i.UpdateDate);
             e.Property(i => i.CreateUser).IsRequired().HasMaxLength(450);
