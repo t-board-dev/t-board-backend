@@ -143,6 +143,7 @@ public class TBoardDbContext : IdentityDbContext
             e.Property(bu => bu.BrandId).IsRequired();
             e.Property(bu => bu.Name).IsRequired().HasMaxLength(256);
             e.Property(bu => bu.URL).IsRequired().HasMaxLength(256);
+            e.Property(bu => bu.Status).IsRequired();
 
             e.HasOne(b => b.Brand)
              .WithMany(c => c.BrandFiles)
