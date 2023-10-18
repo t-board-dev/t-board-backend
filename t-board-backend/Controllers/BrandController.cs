@@ -168,7 +168,6 @@ namespace t_board_backend.Controllers
             return Ok(brand);
         }
 
-        [Authorize]
         [HttpGet("getBrandUsers")]
         [ProducesResponseType(typeof(BrandUserDto[]), 200)]
         public async Task<IActionResult> GetBrandUsers(int brandId)
@@ -459,14 +458,7 @@ namespace t_board_backend.Controllers
                 if (userBrands.Contains(saveBrandFileRequest.BrandId) is false) return Unauthorized();
             }
 
-            var brandFile = await _dbContext.BrandFiles
-                .Where(f =>
-                    f.BrandId == saveBrandFileRequest.BrandId &&
-                    f.Name == saveBrandFileRequest.Name &&
-                    f.URL == saveBrandFileRequest.URL)
-                .FirstOrDefaultAsync();
-
-            if (brandFile != null)
+            if (string.IsNullOrEmpty(saveBrandFileRequest.Id))
             {
                 var newBrandFile = new BrandFile()
                 {
@@ -474,13 +466,65 @@ namespace t_board_backend.Controllers
                     BrandId = saveBrandFileRequest.BrandId,
                     Name = saveBrandFileRequest.Name,
                     URL = saveBrandFileRequest.URL,
+                    Status = 0
                 };
 
                 await _dbContext.AddAsync(newBrandFile);
-                await _dbContext.SaveChangesAsync();
+            }
+            else
+            {
+                var brandFile = await _dbContext.BrandFiles
+                    .Where(f => f.Id == saveBrandFileRequest.Id)
+                    .FirstOrDefaultAsync();
+
+                if (brandFile.Status < 0)
+                {
+                    return Conflict();
+                }
+
+                brandFile.Name = saveBrandFileRequest.Name;
+                brandFile.URL = saveBrandFileRequest.URL;
+                brandFile.Status = saveBrandFileRequest.Status;
             }
 
+            await _dbContext.SaveChangesAsync();
+
             return Ok();
+        }
+
+        [HttpGet("getBrandFiles")]
+        [ProducesResponseType(typeof(BrandFileDto[]), 200)]
+        public async Task<IActionResult> GetBrandFiles(int brandId)
+        {
+            var isCurrentUserAdmin = HttpContext.IsCurrentUserAdmin();
+
+            if (isCurrentUserAdmin is false)
+            {
+                var userId = await HttpContext.GetCurrentUserId();
+
+                var userBrands = await _dbContext.BrandUsers
+                    .Where(b => b.UserId == userId)
+                    .Select(b => b.BrandId)
+                    .ToListAsync();
+
+                if (userBrands.Contains(brandId) is false) return Unauthorized();
+            }
+
+            var brandFiles = await _dbContext.BrandFiles
+                .Where(f =>
+                    f.BrandId == brandId &&
+                    f.Status >= 0)
+                .Select(f => new BrandFileDto()
+                {
+                    Id = f.Id,
+                    BrandId = f.BrandId,
+                    Name = f.Name,
+                    URL = f.URL,
+                    Status = f.Status,
+                })
+                .ToArrayAsync();
+
+            return Ok(brandFiles);
         }
     }
 }
