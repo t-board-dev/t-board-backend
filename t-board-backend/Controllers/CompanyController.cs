@@ -340,14 +340,14 @@ namespace t_board_backend.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPost("updateCompany")]
-        public async Task<IActionResult> UpdateCompany([FromBody] CompanyDto companyDto)
+        public async Task<IActionResult> UpdateCompany([FromBody] UpdateCompanyRequest updateCompanyRequest)
         {
-            var company = await _dbContext.Companies.Where(c => c.Id == companyDto.Id).FirstOrDefaultAsync();
-            if (company == null) return NotFound(companyDto);
+            var company = await _dbContext.Companies.Where(c => c.Id == updateCompanyRequest.Id).FirstOrDefaultAsync();
+            if (company == null) return NotFound(updateCompanyRequest);
 
-            company.Name = companyDto.Name;
-            company.Type = companyDto.Type;
-            company.LogoURL = companyDto.LogoURL;
+            company.Name = updateCompanyRequest.Name;
+            company.Type = updateCompanyRequest.Type;
+            company.LogoURL = updateCompanyRequest.LogoURL;
             company.UpdateDate = DateTimeOffset.Now;
 
             _dbContext.Entry(company).State = EntityState.Modified;
