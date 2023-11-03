@@ -361,15 +361,15 @@ namespace t_board_backend.Controllers
 
         [Authorize(Roles = "Admin, CompanyOwner")]
         [HttpPost("updateBrand")]
-        public async Task<IActionResult> UpdateBrand([FromBody] BrandDto brandDto)
+        public async Task<IActionResult> UpdateBrand([FromBody] UpdateBrandRequest updateBrandRequest)
         {
-            var brand = await _dbContext.Brands.Where(b => b.Id == brandDto.Id).FirstOrDefaultAsync();
-            if (brand == null) return NotFound(brandDto);
+            var brand = await _dbContext.Brands.Where(b => b.Id == updateBrandRequest.Id).FirstOrDefaultAsync();
+            if (brand == null) return NotFound(updateBrandRequest);
 
-            brand.Name = brandDto.Name;
-            brand.LogoURL = brandDto.LogoURL;
-            brand.Keywords = brandDto.Keywords;
-            brand.Design = brandDto.Design;
+            brand.Name = updateBrandRequest.Name;
+            brand.LogoURL = updateBrandRequest.LogoURL;
+            brand.Keywords = updateBrandRequest.Keywords;
+            brand.Design = updateBrandRequest.Design;
             brand.UpdateDate = DateTimeOffset.Now;
 
             _dbContext.Entry(brand).State = EntityState.Modified;
