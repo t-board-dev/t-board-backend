@@ -95,6 +95,7 @@ namespace t_board_backend.Controllers
                     Email = user.Email,
                     Title = user.Title,
                     PhoneNumber = user.PhoneNumber,
+                    AvatarURL = user.AvatarURL,
                     AccountLocked = await _userService.IsUserLocked(user.Email),
                     Roles = userRoles.ToArray(),
                     CompanyId = companyUser?.CompanyId
@@ -132,6 +133,7 @@ namespace t_board_backend.Controllers
                 Email = user.Email,
                 Title = user.Title,
                 PhoneNumber = user.PhoneNumber,
+                AvatarURL = user.AvatarURL,
                 AccountLocked = await _userService.IsUserLocked(user.Email),
                 Roles = userRoles.ToArray(),
                 CompanyId = companyUser?.CompanyId
@@ -382,6 +384,7 @@ namespace t_board_backend.Controllers
                     Email = user.Email,
                     Title = user.Title,
                     PhoneNumber = user.PhoneNumber,
+                    AvatarURL = user.AvatarURL,
                     AccountLocked = await _userService.IsUserLocked(user.Email),
                     Roles = (await _userManager.GetRolesAsync(user)).ToArray(),
                     CompanyId = (await _dbContext.CompanyUsers.FirstOrDefaultAsync(cu => cu.UserId == user.Id))?.CompanyId
