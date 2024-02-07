@@ -26,7 +26,6 @@ namespace t_board_backend.Controllers
         private readonly IInviteService _inviteService;
         private readonly IJwtService _jwtService;
         private readonly IUserService _userService;
-        private readonly IConfiguration Configuration;
 
         private readonly UserManager<TBoardUser> _userManager;
         private readonly SignInManager<TBoardUser> _signInManager;
@@ -38,7 +37,6 @@ namespace t_board_backend.Controllers
             IInviteService inviteService,
             IJwtService jwtService,
             IUserService userService,
-            IConfiguration configuration,
             UserManager<TBoardUser> userManager,
             SignInManager<TBoardUser> signInManager,
             TBoardDbContext dbContext)
@@ -47,7 +45,6 @@ namespace t_board_backend.Controllers
             _inviteService = inviteService;
             _jwtService = jwtService;
             _userService = userService;
-            Configuration = configuration;
 
             _userManager = userManager;
             _signInManager = signInManager;
@@ -73,7 +70,7 @@ namespace t_board_backend.Controllers
                 var claims = await _userService.GetUserClaims(user);
                 var token = _jwtService.GenerateToken(claims);
 
-                var expireMinute = Convert.ToInt32(Configuration["Jwt:ExpireMinute"]);
+                var expireMinute = Convert.ToInt32(Environment.GetEnvironmentVariable("JWT_EXPIRE_MIN"));
                 Response.Cookies.Append(
                     "X-Access-Token",
                     token,

@@ -1,21 +1,12 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using System;
 
 namespace t_board.Entity;
 
 public class TBoardDbContext : IdentityDbContext
 {
-    private readonly IConfiguration Configuration;
-
-    public TBoardDbContext(
-        IConfiguration configuration,
-        DbContextOptions<TBoardDbContext> options)
-        : base(options)
-    {
-        Configuration = configuration;
-    }
+    public TBoardDbContext(DbContextOptions<TBoardDbContext> options) : base(options) { }
 
     public DbSet<Board> Boards { get; set; }
     public DbSet<BoardItem> BoardItems { get; set; }
@@ -155,7 +146,7 @@ public class TBoardDbContext : IdentityDbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        var connectionString = Configuration.GetConnectionString("SQL_SERVER") ??
+        var connectionString = Environment.GetEnvironmentVariable("SQL_SERVER_CONNSTR") ??
             throw new InvalidOperationException("Connection string 'DbContextConnection' not found.");
 
         optionsBuilder.UseSqlServer(connectionString);
