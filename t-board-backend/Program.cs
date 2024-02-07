@@ -3,8 +3,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -15,7 +18,20 @@ using t_board_backend.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddLogging();
+var serverUrl = Environment.GetEnvironmentVariable("SEQ_SERVER_URL");
+var apiKey = Environment.GetEnvironmentVariable("SEQ_API_KEY");
+
+var logger = new Serilog.LoggerConfiguration()
+                .WriteTo.Seq(serverUrl: serverUrl, apiKey: apiKey)
+                .MinimumLevel.Warning()
+                .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+                .Enrich.WithProperty(nameof(Environment.MachineName), Environment.MachineName)
+                .Enrich.WithProperty(nameof(Environment.ProcessId), Environment.ProcessId)
+                .Enrich.WithProperty(nameof(Environment.OSVersion), Environment.OSVersion)
+                .Enrich.WithProperty(nameof(Environment.Version), Environment.Version)
+                .CreateLogger();
+
+builder.Host.UseSerilog(logger);
 
 builder.Services.AddDbContext<TBoardDbContext>();
 
@@ -141,8 +157,8 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-app.UseSwagger();
-app.UseSwaggerUI();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseCors(corsPolicyName);
@@ -155,5 +171,7 @@ app.UseAuthorization();
 app.ConfigureCustomExceptionMiddleware();
 
 app.MapControllers();
+
+app.UseSerilogRequestLogging();
 
 app.Run();
