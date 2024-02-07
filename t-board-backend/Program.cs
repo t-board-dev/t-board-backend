@@ -121,9 +121,8 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-//if (app.Environment.IsDevelopment())
-//{
 var corsPolicyName = "t-board-dev-cors-policy";
+
 builder.Services.AddCors(options =>
     options.AddPolicy(corsPolicyName,
         builder =>
@@ -135,19 +134,18 @@ builder.Services.AddCors(options =>
         }
     )
 );
-//}
 
 builder.Services.AddTBoardServices();
 
 var app = builder.Build();
 
-//if (app.Environment.IsDevelopment())
-//{
+if (app.Environment.IsDevelopment())
+{
 app.UseSwagger();
 app.UseSwaggerUI();
-app.UseCors(corsPolicyName);
-//}
+}
 
+app.UseCors(corsPolicyName);
 
 app.UseHttpsRedirection();
 
