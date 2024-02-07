@@ -9,32 +9,32 @@ using System.Text.Unicode;
 using System.Threading.Tasks;
 using t_board.Helpers;
 using t_board.Services.Contracts;
-using t_board_backend.Models.Scrapper;
+using t_board_backend.Models.Scraper;
 
 namespace t_board_backend.Controllers
 {
     [Authorize]
-    [Route("scrapper/")]
-    public class ScrapperController : Controller
+    [Route("scraper/")]
+    public class ScraperController : Controller
     {
-        private readonly IScrapper _ajansPressScrapper;
-        private readonly IScrapper _interPressScrapper;
-        private readonly IScrapper _medyaTakipScrapper;
+        private readonly IScraper _ajansPressScraper;
+        private readonly IScraper _interPressScraper;
+        private readonly IScraper _medyaTakipScraper;
 
-        public ScrapperController(ServiceResolver serviceResolver)
+        public ScraperController(ServiceResolver serviceResolver)
         {
-            _ajansPressScrapper = serviceResolver("AjansPress");
-            _interPressScrapper = serviceResolver("InterPress");
-            _medyaTakipScrapper = serviceResolver("MedyaTakip");
+            _ajansPressScraper = serviceResolver("AjansPress");
+            _interPressScraper = serviceResolver("InterPress");
+            _medyaTakipScraper = serviceResolver("MedyaTakip");
         }
 
         [HttpPost("scrapeAjansPress")]
         [Produces("application/json")]
         public async Task<IActionResult> ScrapeAjansPress(string url)
         {
-            object scrappedModel = _ajansPressScrapper.Scrape(url);
+            object scrapedModel = _ajansPressScraper.Scrape(url);
 
-            var jsonModel = JsonSerializer.Serialize(scrappedModel,
+            var jsonModel = JsonSerializer.Serialize(scrapedModel,
                 new JsonSerializerOptions()
                 {
                     Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
@@ -47,9 +47,9 @@ namespace t_board_backend.Controllers
         [Produces("application/json")]
         public async Task<IActionResult> ScrapeInterPress(string url)
         {
-            object scrappedModel = _interPressScrapper.Scrape(url);
+            object scrapedModel = _interPressScraper.Scrape(url);
 
-            var jsonModel = JsonSerializer.Serialize(scrappedModel,
+            var jsonModel = JsonSerializer.Serialize(scrapedModel,
                 new JsonSerializerOptions()
                 {
                     Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
@@ -62,9 +62,9 @@ namespace t_board_backend.Controllers
         [Produces("application/json")]
         public async Task<IActionResult> ScrapeMedyaTakip(string url)
         {
-            object scrappedModel = _medyaTakipScrapper.Scrape(url);
+            object scrapedModel = _medyaTakipScraper.Scrape(url);
 
-            var jsonModel = JsonSerializer.Serialize(scrappedModel,
+            var jsonModel = JsonSerializer.Serialize(scrapedModel,
                 new JsonSerializerOptions()
                 {
                     Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
@@ -77,7 +77,7 @@ namespace t_board_backend.Controllers
         [Produces("application/json")]
         public async Task<IActionResult> ScrapeMetaData(string url)
         {
-            if (Validator.IsValidUri(url) is false) return BadRequest("URL is not valid. Content could not scrapped.");
+            if (Validator.IsValidUri(url) is false) return BadRequest("URL is not valid. Content could not scraped.");
 
             var metaData = new MetaData();
 

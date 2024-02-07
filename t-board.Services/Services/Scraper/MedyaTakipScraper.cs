@@ -5,22 +5,22 @@ using System.Globalization;
 using System.Linq;
 using t_board.Services.Contracts;
 
-namespace t_board.Services.Services.Scrapper
+namespace t_board.Services.Services.Scraper
 {
-    public class MedyaTakipScrapper : IScrapper
+    public class MedyaTakipScraper : IScraper
     {
-        public MedyaTakipScrapper()
+        public MedyaTakipScraper()
         {
 
         }
 
-        public IScrappedModel Scrape(string url)
+        public IScrapedModel Scrape(string url)
         {
             if (Helpers.Validator.IsValidUri(url) is false)
-                throw new ArgumentException("URL is not valid. Content could not scrapped.");
+                throw new ArgumentException("URL is not valid. Content could not scraped.");
 
             if (url.Contains("clips.medyatakip.com") is false)
-                throw new ArgumentException("URL is not valid. Content could not scrapped.");
+                throw new ArgumentException("URL is not valid. Content could not scraped.");
 
             var web = new HtmlWeb();
             var doc = web.Load(url);
@@ -31,7 +31,7 @@ namespace t_board.Services.Services.Scrapper
             if (url.Contains("/dm/clip/"))
                 return ScrapeOnlineBasin(doc);
 
-            throw new ArgumentException("URL is not valid. Content could not scrapped.");
+            throw new ArgumentException("URL is not valid. Content could not scraped.");
         }
 
         private MedyaTakipOnlineBasinModel ScrapeOnlineBasin(HtmlDocument doc)
@@ -78,7 +78,7 @@ namespace t_board.Services.Services.Scrapper
         }
     }
 
-    public class MedyaTakipOnlineBasinModel : IScrappedModel
+    public class MedyaTakipOnlineBasinModel : IScrapedModel
     {
         public string Url { get; set; }
         public string Title { get; set; }
@@ -87,7 +87,7 @@ namespace t_board.Services.Services.Scrapper
         public IEnumerable<string> Keywords { get; set; }
     }
 
-    public class MedyaTakipYaziliBasinModel : IScrappedModel
+    public class MedyaTakipYaziliBasinModel : IScrapedModel
     {
         public string PublishName { get; set; }
         public string Period { get; set; }

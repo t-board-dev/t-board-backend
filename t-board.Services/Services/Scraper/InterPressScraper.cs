@@ -7,22 +7,22 @@ using System.Linq;
 using System.Threading.Tasks;
 using t_board.Services.Contracts;
 
-namespace t_board.Services.Services.Scrapper
+namespace t_board.Services.Services.Scraper
 {
-    public class InterPressScrapper : IScrapper
+    public class InterPressScraper : IScraper
     {
-        public InterPressScrapper()
+        public InterPressScraper()
         {
 
         }
 
-        public IScrappedModel Scrape(string url)
+        public IScrapedModel Scrape(string url)
         {
             if (Helpers.Validator.IsValidUri(url) is false)
-                throw new ArgumentException("URL is not valid. Content could not scrapped.");
+                throw new ArgumentException("URL is not valid. Content could not scraped.");
 
             if (url.Contains("web.interpress.com") is false)
-                throw new ArgumentException("URL is not valid. Content could not scrapped.");
+                throw new ArgumentException("URL is not valid. Content could not scraped.");
 
             var options = new ChromeOptions();
 
@@ -50,7 +50,7 @@ namespace t_board.Services.Services.Scrapper
             if (iframeNode != null)
                 return ScrapeOnlineBasin(doc);
 
-            throw new ArgumentException("URL is not valid. Content could not scrapped.");
+            throw new ArgumentException("URL is not valid. Content could not scraped.");
         }
 
         private InterPressOnlineBasinModel ScrapeOnlineBasin(HtmlDocument doc)
@@ -130,7 +130,7 @@ namespace t_board.Services.Services.Scrapper
         }
     }
 
-    public class InterPressOnlineBasinModel : IScrappedModel
+    public class InterPressOnlineBasinModel : IScrapedModel
     {
         public string Title { get; set; }
         public string PublishName { get; set; }
@@ -140,7 +140,7 @@ namespace t_board.Services.Services.Scrapper
         public IEnumerable<string> Keywords { get; set; }
     }
 
-    public class InterPressYaziliBasinModel : IScrappedModel
+    public class InterPressYaziliBasinModel : IScrapedModel
     {
         public string Title { get; set; }
         public string PublishName { get; set; }
@@ -154,7 +154,7 @@ namespace t_board.Services.Services.Scrapper
         public IEnumerable<string> Keywords { get; set; }
     }
 
-    public class InterPressTvModel : IScrappedModel
+    public class InterPressTvModel : IScrapedModel
     {
         public string Title { get; set; }
         public string BroadcastName { get; set; }

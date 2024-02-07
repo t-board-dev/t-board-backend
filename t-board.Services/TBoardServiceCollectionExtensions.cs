@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using t_board.Services.Contracts;
 using t_board.Services.Services;
-using t_board.Services.Services.Scrapper;
+using t_board.Services.Services.Scraper;
 
 namespace t_board.Services
 {
@@ -15,21 +15,21 @@ namespace t_board.Services
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IUserService, UserService>();
 
-            // Scrapper
-            services.AddScoped<AjansPressScrapper>();
-            services.AddScoped<InterPressScrapper>();
-            services.AddScoped<MedyaTakipScrapper>();
+            // Scraper
+            services.AddScoped<AjansPressScraper>();
+            services.AddScoped<InterPressScraper>();
+            services.AddScoped<MedyaTakipScraper>();
 
             services.AddScoped<ServiceResolver>(serviceProvider => key =>
             {
                 switch (key)
                 {
                     case "AjansPress":
-                        return serviceProvider.GetService<AjansPressScrapper>();
+                        return serviceProvider.GetService<AjansPressScraper>();
                     case "InterPress":
-                        return serviceProvider.GetService<InterPressScrapper>();
+                        return serviceProvider.GetService<InterPressScraper>();
                     case "MedyaTakip":
-                        return serviceProvider.GetService<MedyaTakipScrapper>();
+                        return serviceProvider.GetService<MedyaTakipScraper>();
                     default:
                         throw new KeyNotFoundException();
                 }

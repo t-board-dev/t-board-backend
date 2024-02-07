@@ -1,4 +1,4 @@
-﻿namespace t_board_backend.Models.Scrapper
+﻿namespace t_board_backend.Models.Scraper
 {
     public class MetaData
     {

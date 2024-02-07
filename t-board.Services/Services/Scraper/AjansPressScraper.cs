@@ -3,21 +3,21 @@ using System;
 using System.Globalization;
 using t_board.Services.Contracts;
 
-namespace t_board.Services.Services.Scrapper
+namespace t_board.Services.Services.Scraper
 {
-    public class AjansPressScrapper : IScrapper
+    public class AjansPressScraper : IScraper
     {
-        public AjansPressScrapper()
+        public AjansPressScraper()
         {
         }
 
-        public IScrappedModel Scrape(string url)
+        public IScrapedModel Scrape(string url)
         {
             if (Helpers.Validator.IsValidUri(url) is false)
-                throw new ArgumentException("URL is not valid. Content could not scrapped.");
+                throw new ArgumentException("URL is not valid. Content could not scraped.");
 
             if (url.Contains("gold.ajanspress.com.tr") is false)
-                throw new ArgumentException("URL is not valid. Content could not scrapped.");
+                throw new ArgumentException("URL is not valid. Content could not scraped.");
 
             var web = new HtmlWeb();
             var doc = web.Load(url);
@@ -31,7 +31,7 @@ namespace t_board.Services.Services.Scrapper
             if (url.Contains("/linkpress/"))
                 return ScrapeYaziliBasin(doc);
 
-            throw new ArgumentException("URL is not valid. Content could not scrapped.");
+            throw new ArgumentException("URL is not valid. Content could not scraped.");
         }
 
         private AjansPressOnlineBasinModel ScrapeOnlineBasin(HtmlDocument doc)
@@ -127,7 +127,7 @@ namespace t_board.Services.Services.Scrapper
         }
     }
 
-    public class AjansPressOnlineBasinModel : IScrappedModel
+    public class AjansPressOnlineBasinModel : IScrapedModel
     {
         public string Url { get; set; }
         public string Title { get; set; }
@@ -140,7 +140,7 @@ namespace t_board.Services.Services.Scrapper
         public string Keyword { get; set; }
     }
 
-    public class AjansPressTVModel : IScrappedModel
+    public class AjansPressTVModel : IScrapedModel
     {
         public string Title { get; set; }
         public string Reference { get; set; }
@@ -157,7 +157,7 @@ namespace t_board.Services.Services.Scrapper
         public int AccessCount { get; set; }
     }
 
-    public class AjansPressYaziliBasinModel : IScrappedModel
+    public class AjansPressYaziliBasinModel : IScrapedModel
     {
         public string Title { get; set; }
         public string Reference { get; set; }
