@@ -51,7 +51,7 @@ builder.Services
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    var expireMinute = Convert.ToInt32(builder.Configuration["Jwt:ExpireMinute"]);
+    var expireMinute = Convert.ToInt32(Environment.GetEnvironmentVariable("JWT_EXPIRE_MIN"));
     options.Cookie.Name = "t-board-cookie";
     options.Cookie.HttpOnly = true;
     options.ExpireTimeSpan = TimeSpan.FromMinutes(expireMinute);
@@ -76,7 +76,7 @@ builder.Services.AddAuthentication(auth =>
         ValidateAudience = false,
         ValidateIssuerSigningKey = true,
 
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_KEY")))
     };
 
     options.Events = new JwtBearerEvents
