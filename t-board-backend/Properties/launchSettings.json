@@ -9,7 +9,7 @@
     }
   },
   "profiles": {
-    "DEV_t_board_backend": {
+    "DEV": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
@@ -18,12 +18,20 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
 
-        "SENDGRID_API": "hjNWlMNpQ0KQKCWCxX-5Xw",
-        "SENDGRID_KEY": "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",
-        "MAIL_FROM": "info@board.com.tr"
+        "SQL_SERVER_CONNSTR": "Server=(localdb)\\mssqllocaldb;Database=t-board;Trusted_Connection=True;Connection Timeout=30",
+
+        "JWT_KEY": "eNHWyBO0L5e52KjC74O8c13j4c1tAPnrR97ZbRGjNySHdXhk2nkqnuBqwpIRfwT",
+        "JWT_EXPIRE_MIN": "360",
+
+        "SENDGRID_API": "",
+        "SENDGRID_KEY": "",
+        "MAIL_FROM": "info@board.com.tr",
+
+        "SEQ_SERVER_URL": "http://localhost:64461",
+        "SEQ_API_KEY": "OTom7EnHVr1yccVpCXZA"
       }
     },
-    "PROD_t_board_backend": {
+    "PROD": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
@@ -32,9 +40,17 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Production",
 
-        "SENDGRID_API": "hjNWlMNpQ0KQKCWCxX-5Xw",
-        "SENDGRID_KEY": "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",
-        "MAIL_FROM": "info@board.com.tr"
+        "SQL_SERVER_CONNSTR": "Server=(localdb)\\mssqllocaldb;Database=t-board;Trusted_Connection=True;Connection Timeout=30",
+
+        "JWT_KEY": "eNHWyBO0L5e52KjC74O8c13j4c1tAPnrR97ZbRGjNySHdXhk2nkqnuBqwpIRfwT",
+        "JWT_EXPIRE_MIN": "360",
+
+        "SENDGRID_API": "",
+        "SENDGRID_KEY": "",
+        "MAIL_FROM": "info@board.com.tr",
+
+        "SEQ_SERVER_URL": "http://localhost:64461",
+        "SEQ_API_KEY": "OTom7EnHVr1yccVpCXZA"
       }
     },
     "IIS Express": {
