@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -12,19 +11,8 @@ namespace t_board.Services.Services
 {
     public sealed class JwtService : IJwtService
     {
-        private readonly string _secretKey;
-        private readonly string _expireMinute;
-
-        private readonly IConfiguration Configuration;
-
-        public JwtService(
-            IConfiguration configuration)
-        {
-            Configuration = configuration;
-
-            _secretKey = Configuration["Jwt:Key"];
-            _expireMinute = Configuration["Jwt:ExpireMinute"];
-        }
+        private readonly string _secretKey = Environment.GetEnvironmentVariable("JWT_KET");
+        private readonly string _expireMinute = Environment.GetEnvironmentVariable("JWT_EXPIRE_MIN");
 
         /// <summary>
         /// Validates whether a given token is valid or not. 
